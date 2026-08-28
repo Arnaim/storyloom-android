@@ -97,18 +97,12 @@ class SettingsStore {
   }
 }
 
-const List<String> supportedModels = [
-  // 1. Google's Free Flash Variant (Dynamically updates to the latest version)
-  'google/gemini-flash-latest:free',
+const supportedModels = [
+  'gemini-flash-latest',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
 
-  // 2. The Ultimate Dynamic Fallback (Schedules request to whatever free server has bandwidth)
-  'openrouter/free', 
-
-  // 3. Best Uncensored/Roleplay Models (Perfect for creative narrative & characters)
-  'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
-  'xiaomi/mimo-v2.5:free', // Massive 1-million-token story memory
-
-  // 4. Best Smart Free Generalist Models
-  'google/gemma-3-27b:free',
-  'google/gemma-4:free',
+  // OpenRouter
+  'openrouter/free',
 ];
