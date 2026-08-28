@@ -22,6 +22,7 @@ class Scenario {
     required this.isSample,
     required this.playCount,
     this.author = 'Storyloom',
+    this.coverArt,
   });
 
   final int id;
@@ -45,6 +46,7 @@ class Scenario {
   final bool isSample;
   final int playCount;
   final String author;
+  final String? coverArt;
 
   String get ratingLabel => contentRating == 'mature' ? 'Mature' : 'General';
 
@@ -70,6 +72,7 @@ class Scenario {
         'is_sample': isSample ? 1 : 0,
         'play_count': playCount,
         'author': author,
+        'cover_art': coverArt,
       };
 
   factory Scenario.fromJson(Map<String, dynamic> j) => Scenario(
@@ -94,6 +97,7 @@ class Scenario {
         isSample: (j['is_sample'] == 1 || j['is_sample'] == true),
         playCount: (j['play_count'] as num?)?.toInt() ?? 0,
         author: (j['author'] as String?) ?? 'Storyloom',
+        coverArt: (j['cover_art'] as String?) ?? '',
       );
 
   static List<String> _strList(dynamic v) =>

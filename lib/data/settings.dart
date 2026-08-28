@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppSettings {
   AppSettings({
     this.apiKey = '',
-    this.model = 'gemini-2.5-flash',
+    this.model = 'gemini-flash-latest',
     this.temperature = 0.9,
     this.maxOutputTokens = 1024,
     this.contextMessages = 16,
@@ -58,6 +58,9 @@ class SettingsStore {
     }
     final secureKey = await _readSecureKey();
     if (secureKey.isNotEmpty) settings.apiKey = secureKey;
+    if (!supportedModels.contains(settings.model)) {
+      settings.model = supportedModels.first;
+    }
     return settings;
   }
 
@@ -94,8 +97,18 @@ class SettingsStore {
   }
 }
 
-const supportedModels = [
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-flash-lite-latest',
+const List<String> supportedModels = [
+  // 1. Google's Free Flash Variant (Dynamically updates to the latest version)
+  'google/gemini-flash-latest:free',
+
+  // 2. The Ultimate Dynamic Fallback (Schedules request to whatever free server has bandwidth)
+  'openrouter/free', 
+
+  // 3. Best Uncensored/Roleplay Models (Perfect for creative narrative & characters)
+  'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+  'xiaomi/mimo-v2.5:free', // Massive 1-million-token story memory
+
+  // 4. Best Smart Free Generalist Models
+  'google/gemma-3-27b:free',
+  'google/gemma-4:free',
 ];

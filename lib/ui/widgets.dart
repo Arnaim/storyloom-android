@@ -78,6 +78,31 @@ class TagChip extends StatelessWidget {
   }
 }
 
+/// A scenario "cover": the bundled cover art when present, otherwise the
+/// deterministic genre banner.
+class ScenarioCover extends StatelessWidget {
+  const ScenarioCover({super.key, required this.scenario, this.height = 120});
+
+  final Scenario scenario;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final cover = scenario.coverArt;
+    if (cover != null && cover.isNotEmpty) {
+      return SizedBox(
+        height: height,
+        width: double.infinity,
+        child: Image.asset(cover, fit: BoxFit.cover),
+      );
+    }
+    return GenreBanner(
+      label: scenario.genre.isNotEmpty ? scenario.genre : scenario.title,
+      height: height,
+    );
+  }
+}
+
 class ScenarioCard extends StatelessWidget {
   const ScenarioCard({super.key, required this.scenario, this.onTap});
 
@@ -95,10 +120,7 @@ class ScenarioCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GenreBanner(
-              label: scenario.genre.isNotEmpty ? scenario.genre : scenario.title,
-              height: 96,
-            ),
+            ScenarioCover(scenario: scenario, height: 96),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(

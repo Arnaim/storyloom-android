@@ -23,7 +23,7 @@ class AppDatabase {
     final path = p.join(dir, 'storyloom.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE scenarios (
@@ -47,7 +47,8 @@ class AppDatabase {
             opening_suggestions TEXT,
             is_sample INTEGER DEFAULT 0,
             play_count INTEGER DEFAULT 0,
-            author TEXT DEFAULT 'Storyloom'
+            author TEXT DEFAULT 'Storyloom',
+            cover_art TEXT
           )
         ''');
         await db.execute('''
@@ -124,6 +125,23 @@ class AppDatabase {
           )
         ''');
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE scenarios ADD COLUMN cover_art TEXT');
+          // Replace the old sample pack with the current one. There is no UI
+          // for user-created scenarios yet, so clearing all rows is safe.
+          await db.delete('scenarios');
+          final batch = db.batch();
+          for (final s in SeedScenarios.all) {
+            batch.insert('scenarios', {
+              ..._scenRow(Scenario.fromJson(
+                  {...s, 'is_sample': true, 'id': 0, 'play_count': 0})),
+              'id': null,
+            }, conflictAlgorithm: ConflictAlgorithm.ignore);
+          }
+          await batch.commit(noResult: true);
+        }
+      },
     );
   }
 
@@ -151,6 +169,7 @@ class AppDatabase {
         'is_sample': s.isSample ? 1 : 0,
         'play_count': s.playCount,
         'author': s.author,
+        'cover_art': s.coverArt,
       };
 
   Future<void> seedIfEmpty() async {
@@ -161,7 +180,8 @@ class AppDatabase {
     final batch = db.batch();
     for (final s in SeedScenarios.all) {
       batch.insert('scenarios', {
-        ..._scenRow(Scenario.fromJson({...s, 'id': 0, 'play_count': 0})),
+        ..._scenRow(Scenario.fromJson(
+            {...s, 'is_sample': true, 'id': 0, 'play_count': 0})),
         'id': null,
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
@@ -208,6 +228,7 @@ class AppDatabase {
         'is_sample': r['is_sample'] == 1,
         'play_count': r['play_count'],
         'author': r['author'],
+        'cover_art': r['cover_art'],
       };
 
   // ------------------------------------------------------------------- //

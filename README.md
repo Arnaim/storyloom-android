@@ -43,8 +43,9 @@ API key** (Bring Your Own Key).
 
 - Android 6.0+ (minSdk 19); tested against Android 36 (SDK 36).
 - A Google Gemini API key (free tier available at
-  <https://aistudio.google.com/app/apikey>). The model used by default is
-  `gemini-2.5-flash`.
+  <https://aistudio.google.com/app/apikey>). The default model is
+  `gemini-flash-latest` (auto-updates to the newest Flash); you can also pick
+  a specific recent model in Settings.
 
 ## Get Started
 

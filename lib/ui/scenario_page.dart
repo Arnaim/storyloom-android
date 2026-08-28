@@ -111,8 +111,7 @@ class _ScenarioPageState extends State<ScenarioPage> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          GenreBanner(label: scenario.genre.isNotEmpty ? scenario.genre : scenario.title,
-              height: 170),
+          ScenarioCover(scenario: scenario, height: 170),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

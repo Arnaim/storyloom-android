@@ -26,6 +26,9 @@ migrate_working_dir/
 # Local fvm IDE settings (points at this machine's Flutter SDK path)
 .vscode/
 
+# Source material provided by the author (logo, scenario pack, reference art)
+scenerio examples/
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
