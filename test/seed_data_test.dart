@@ -12,7 +12,7 @@ void main() {
     databaseFactory = databaseFactoryFfiNoIsolate;
   });
 
-  test('seed pack inserts 20 scenarios and keeps cover art', () async {
+  test('seed pack inserts 23 scenarios and keeps cover art', () async {
     final db = await AppDatabase.instance.db;
     await db.delete('scenarios');
     await AppDatabase.instance.seedIfEmpty();
@@ -20,14 +20,14 @@ void main() {
     final scenarios = await AppDatabase.instance.listScenarios();
     final samples = scenarios.where((s) => s.isSample).toList();
 
-    expect(samples.length, 20);
+    expect(samples.length, 23);
 
-    final mob = samples.firstWhere(
-      (s) => s.title == 'The Mob Who Was Never Meant to Matter',
+    final secondSky = samples.firstWhere(
+      (s) => s.title == 'The Second Sky',
     );
-    expect(mob.coverArt, 'assets/covers/scenario1.jpg');
+    expect(secondSky.coverArt, 'assets/covers/scenario1.jpg');
 
     final lite = samples.where((s) => s.coverArt != null).toList();
-    expect(lite.length, 1);
+    expect(lite.length, 23);
   });
 }

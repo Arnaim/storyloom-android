@@ -350,7 +350,7 @@ class AppDatabase {
   // ------------------------------------------------------------------- //
   Future<int> insertMessage(StoryMessage m) async {
     final db = await instance.db;
-    return db.insert('messages', _msgRow(m));
+    return db.insert('messages', _msgRow(m), conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   Map<String, Object?> _msgRow(StoryMessage m) => {
