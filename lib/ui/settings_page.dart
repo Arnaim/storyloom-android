@@ -366,12 +366,12 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isOpenRouter ? 'OpenRouter API key' : 'Gemini API key'),
+          title: Text(isOpenRouter ? 'OpenRouter API key' : 'API key'),
           content: TextField(
             controller: key,
             obscureText: hidden,
             decoration: InputDecoration(
-              hintText: isOpenRouter ? 'sk-or-...' : 'Paste your Gemini key here',
+              hintText: isOpenRouter ? 'sk-or-...' : 'Paste your API key here',
               suffixIcon: IconButton(
                 icon: Icon(hidden ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => hidden = !hidden),

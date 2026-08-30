@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppSettings {
   AppSettings({
     this.apiKey = '',
-    this.model = 'gemini-flash-latest',
+    this.model = 'gemini-3.6-flash',
     this.temperature = 0.9,
     this.maxOutputTokens = 1024,
     this.contextMessages = 16,
@@ -29,7 +29,7 @@ class AppSettings {
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
         apiKey: (j['api_key'] as String?) ?? '',
-        model: (j['model'] as String?) ?? 'gemini-2.5-flash',
+        model: (j['model'] as String?) ?? 'gemini-3.6-flash',
         temperature: (j['temperature'] as num?)?.toDouble() ?? 0.9,
         maxOutputTokens: (j['max_output_tokens'] as num?)?.toInt() ?? 1024,
         contextMessages: (j['context_messages'] as num?)?.toInt() ?? 16,
@@ -98,18 +98,19 @@ class SettingsStore {
 }
 
 const supportedModels = [
-  'gemini-flash-latest',
+  // Gemini (free tier)
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
   'gemini-2.5-flash',
-  'gemini-2.5-pro',
-  'gemini-2.0-flash',
 
   // OpenRouter (free models)
-  'openrouter/meta-llama/llama-3.1-8b-instruct:free',
-  'openrouter/meta-llama/llama-3.1-70b-instruct:free',
-  'openrouter/mistralai/mistral-7b-instruct:free',
-  'openrouter/google/gemma-2-9b-it:free',
-  'openrouter/qwen/qwen-2-7b-instruct:free',
-  'openrouter/deepseek/deepseek-r1-0528:free',
+  'openrouter/free',
+  'openrouter/nvidia/nemotron-3-ultra-550b-a55b:free',
+  'openrouter/minimax/minimax-m3:free',
+  'openrouter/nvidia/nemotron-3.5-lightning:free',
+  'openrouter/z-ai/glm-5.2:free',
+  'openrouter/google/gemma-4-31b-it:free',
 ];
 
 /// Returns true if the model string refers to an OpenRouter model.
