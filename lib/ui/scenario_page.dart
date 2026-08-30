@@ -67,9 +67,9 @@ class _ScenarioPageState extends State<ScenarioPage> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Connect Gemini first'),
+        title: const Text('API key required'),
         content: const Text(
-          'Storyloom needs your own Gemini API key to generate stories. '
+          'Storyloom needs an API key to generate stories. '
           'You can add one in Settings.',
         ),
         actions: [
@@ -210,7 +210,7 @@ class _ScenarioPageState extends State<ScenarioPage> {
                 const SizedBox(height: 8),
                 Text(
                   'You will choose or create your character next. '
-                  'Generate with your own Gemini API key.',
+                   'Generate with your own API key.',
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall

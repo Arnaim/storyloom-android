@@ -183,6 +183,18 @@ String buildNpcs(List<StoryNPC> npcs, {int limit = 8}) {
     if (fears.isNotEmpty) {
       bits.add('- Fears: ${fears.length > 140 ? fears.substring(0, 140) : fears}');
     }
+    final backstoryHook = d['backstory_hook'] as String? ?? '';
+    if (backstoryHook.isNotEmpty) {
+      bits.add('- Backstory: ${backstoryHook.length > 200 ? backstoryHook.substring(0, 200) : backstoryHook}');
+    }
+    final professionClass = d['profession_class'] as String? ?? '';
+    if (professionClass.isNotEmpty) {
+      bits.add('- Role/Class: $professionClass');
+    }
+    final speechStyle = d['speech_style'] as String? ?? '';
+    if (speechStyle.isNotEmpty) {
+      bits.add('- Speech style: ${speechStyle.length > 120 ? speechStyle.substring(0, 120) : speechStyle}');
+    }
     if (n.emotionalState.trim().isNotEmpty) {
       bits.add('- Current emotional state: ${n.emotionalState}');
     }

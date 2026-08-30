@@ -137,7 +137,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
         onChunk: _onChunk,
       );
     } on AiException catch (e) {
-      _fail('Gemini couldn\'t continue the story.\n${e.message}');
+      _fail('Couldn\'t continue the story.\n${e.message}');
     } catch (e) {
       _fail('Something went wrong generating the story.\n$e');
     } finally {
@@ -260,6 +260,8 @@ class _PlayerRouteState extends State<PlayerRoute> {
                 _send('', isContinue: true);
               case 'regenerate':
                 _regenerate();
+              case 'delete':
+                _confirmDelete();
             }
           },
           itemBuilder: (context) => const [
@@ -272,6 +274,10 @@ class _PlayerRouteState extends State<PlayerRoute> {
             PopupMenuItem(value: 'regenerate',
                 child: ListTile(leading: Icon(Icons.refresh),
                     title: Text('Regenerate last'), contentPadding: EdgeInsets.zero)),
+            PopupMenuItem(value: 'delete',
+                child: ListTile(leading: Icon(Icons.delete_outline, color: Colors.redAccent),
+                    title: Text('Delete story', style: TextStyle(color: Colors.redAccent)),
+                    contentPadding: EdgeInsets.zero)),
           ],
         ),
       ],
@@ -471,6 +477,34 @@ class _PlayerRouteState extends State<PlayerRoute> {
       ),
     );
   }
+
+  void _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete story?'),
+        content: Text(
+            'This will permanently delete "${_story.title}" and all its messages.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await AppDatabase.instance.deleteStory(_storyId);
+      if (mounted) Navigator.of(context).pop();
+    }
+  }
 }
 
 /// Parses a narration into prose + dialogue blocks and renders them with
@@ -516,7 +550,7 @@ class _MessageView extends StatelessWidget {
                     letterSpacing: 1,
                     color: scheme.primary)),
             const SizedBox(height: 2),
-            Text(message.content,
+            SelectableText(message.content,
                 style: TextStyle(
                     color: scheme.onPrimaryContainer, height: 1.35)),
           ],
@@ -542,7 +576,7 @@ class _MessageView extends StatelessWidget {
             Icon(icon, size: 14, color: scheme.secondary),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(
+              child: SelectableText(
                 message.content,
                 style: TextStyle(
                     fontSize: 12.5,
@@ -618,7 +652,7 @@ class _MessageView extends StatelessWidget {
                       letterSpacing: 0.3,
                       color: theme.colorScheme.primary)),
               const SizedBox(height: 2),
-              Text('“${block.quote}”',
+              SelectableText('"${block.quote}"',
                   style: TextStyle(
                       fontSize: 15.5,
                       fontStyle: FontStyle.italic,
@@ -630,7 +664,7 @@ class _MessageView extends StatelessWidget {
         if (block.trailing != null && block.trailing!.trim().isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(block.trailing!.trim(),
+            child: SelectableText(block.trailing!.trim(),
                 style: TextStyle(fontSize: 15, height: 1.45)),
           ),
       ];
@@ -638,7 +672,7 @@ class _MessageView extends StatelessWidget {
     return [
       Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 2),
-        child: Text(
+        child: SelectableText(
           block.prose ?? '',
           style: TextStyle(fontSize: 15.5, height: 1.55),
         ),
@@ -718,13 +752,13 @@ class _StreamTail extends StatelessWidget {
           if (!b.isDialogue)
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 2),
-              child: Text(b.prose!,
+              child: SelectableText(b.prose!,
                   style: TextStyle(fontSize: 15.5, height: 1.55)),
             )
           else
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text('“${b.quote}”',
+              child: SelectableText('"${b.quote}"',
                   style: const TextStyle(
                       fontSize: 15.5, fontStyle: FontStyle.italic, height: 1.4)),
             ),

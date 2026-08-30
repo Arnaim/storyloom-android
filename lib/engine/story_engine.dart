@@ -64,6 +64,7 @@ class StoryEngine {
       for (final key in [
         'description', 'personality', 'background', 'goals',
         'fears', 'knowledge', 'secrets',
+        'backstory_hook', 'profession_class', 'speech_style',
       ]) {
         final v = tpl[key];
         if (v != null && v.toString().trim().isNotEmpty) details[key] = v.toString();
@@ -441,24 +442,25 @@ class StoryEngine {
     final created = <StoryMessage>[];
     final seen = <String>{};
     var cap = 6;
-    var seq = story.lastMessageSeq;
     for (final (kind, text) in notes) {
       final key = text.toLowerCase().trim().replaceAll(RegExp(r'[.\s]+$'), '');
       if (seen.any((s) => key.contains(s) || s.contains(key))) continue;
       seen.add(key);
-      seq += 1;
-      await _db.updateStory(story.copyWith(lastMessageSeq: seq));
+      final refreshedStory = await _db.getStory(story.id);
+      if (refreshedStory == null) break;
+      final nextSeq = refreshedStory.lastMessageSeq + 1;
+      await _db.updateStory(refreshedStory.copyWith(lastMessageSeq: nextSeq));
       final id = await _db.insertMessage(StoryMessage(
-        storyId: story.id,
-        seq: seq,
+        storyId: refreshedStory.id,
+        seq: nextSeq,
         role: 'system',
         kind: kind,
         content: text,
       ));
       created.add(StoryMessage(
         id: id,
-        storyId: story.id,
-        seq: seq,
+        storyId: refreshedStory.id,
+        seq: nextSeq,
         role: 'system',
         kind: kind,
         content: text,

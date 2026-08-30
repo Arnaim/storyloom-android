@@ -99,10 +99,22 @@ class SettingsStore {
 
 const supportedModels = [
   'gemini-flash-latest',
-  'gemini-3.7-flash',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gemini-2.0-flash',
 
-  // OpenRouter
-  'openrouter/free',
+  // OpenRouter (free models)
+  'openrouter/meta-llama/llama-3.1-8b-instruct:free',
+  'openrouter/meta-llama/llama-3.1-70b-instruct:free',
+  'openrouter/mistralai/mistral-7b-instruct:free',
+  'openrouter/google/gemma-2-9b-it:free',
+  'openrouter/qwen/qwen-2-7b-instruct:free',
+  'openrouter/deepseek/deepseek-r1-0528:free',
 ];
+
+/// Returns true if the model string refers to an OpenRouter model.
+bool isOpenRouterModel(String model) => model.startsWith('openrouter/');
+
+/// Strips the `openrouter/` prefix to get the actual model ID for the API.
+String openRouterModelId(String model) =>
+    model.startsWith('openrouter/') ? model.substring('openrouter/'.length) : model;

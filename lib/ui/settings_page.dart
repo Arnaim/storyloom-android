@@ -97,7 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.only(bottom: 32),
         children: [
           _section(
-            'Gemini API',
+            'API Provider',
             children: [
               ListTile(
                 leading: const Icon(Icons.key_outlined),
@@ -167,13 +167,24 @@ class _SettingsPageState extends State<SettingsPage> {
                   initialValue: supportedModels.contains(_draft.model)
                       ? _draft.model
                       : supportedModels.first,
-                  decoration: const InputDecoration(labelText: 'Gemini model'),
+                  decoration: const InputDecoration(labelText: 'AI model'),
                   items: supportedModels
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
                   onChanged: (v) {
                     if (v != null) _set((s) => s.model = v);
                   },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                child: Text(
+                  isOpenRouterModel(_draft.model)
+                      ? 'Using OpenRouter — get a free key at openrouter.ai/keys'
+                      : 'Using Google Gemini — get a key at aistudio.google.com/app/apikey',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ),
             ],
@@ -350,16 +361,17 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showKeyDialog() {
     final key = TextEditingController(text: _keyController.text);
     var hidden = true;
+    final isOpenRouter = isOpenRouterModel(_draft.model);
     showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Gemini API key'),
+          title: Text(isOpenRouter ? 'OpenRouter API key' : 'Gemini API key'),
           content: TextField(
             controller: key,
             obscureText: hidden,
             decoration: InputDecoration(
-              hintText: 'Paste your key here',
+              hintText: isOpenRouter ? 'sk-or-...' : 'Paste your Gemini key here',
               suffixIcon: IconButton(
                 icon: Icon(hidden ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => hidden = !hidden),

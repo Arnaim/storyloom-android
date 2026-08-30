@@ -123,6 +123,10 @@ class _LibraryTab extends StatelessWidget {
                 ),
               ).then((_) => onChanged());
             },
+            onDelete: () async {
+              await AppDatabase.instance.deleteStory(s.id);
+              onChanged();
+            },
           );
         },
       ),

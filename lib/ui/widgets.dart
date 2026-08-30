@@ -156,10 +156,16 @@ class ScenarioCard extends StatelessWidget {
 }
 
 class StoryTile extends StatelessWidget {
-  const StoryTile({super.key, required this.story, required this.onTap});
+  const StoryTile({
+    super.key,
+    required this.story,
+    required this.onTap,
+    this.onDelete,
+  });
 
   final Story story;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +177,32 @@ class StoryTile extends StatelessWidget {
     ].join(' · ');
     return ListTile(
       onTap: onTap,
+      onLongPress: onDelete != null
+          ? () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Delete story?'),
+                  content: Text(
+                      'This will permanently delete "${story.title}" and all its messages.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) onDelete?.call();
+            }
+          : null,
       leading: CircleAvatar(
         backgroundColor: gradientColorFor(story.title).withValues(alpha: 0.75),
         foregroundColor: Colors.white,
