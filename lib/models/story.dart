@@ -32,6 +32,26 @@ class StoryMessage {
   bool get isUser => role == 'user';
   bool get isSystem => role == 'system';
 
+  /// True when this user message is a physical/narrated action (*like this*)
+  /// rather than spoken dialogue.
+  bool get isUserAction =>
+      isUser && (kind == 'action' || isActionSyntax(content));
+
+  /// Input wrapped in asterisks (*i gazed at her*) is a narrated action.
+  static bool isActionSyntax(String text) {
+    final t = text.trim();
+    return t.length >= 3 && t.startsWith('*') && t.endsWith('*');
+  }
+
+  /// Strips the * wrapping from action-syntax input for display/prompt use.
+  static String stripActionSyntax(String text) {
+    var t = text.trim();
+    if (t.length >= 3 && t.startsWith('*') && t.endsWith('*')) {
+      t = t.substring(1, t.length - 1).trim();
+    }
+    return t;
+  }
+
   String get activeContent {
     if (variants.isEmpty) return content;
     final idx = activeVariant.clamp(0, variants.length - 1);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/database.dart';
 import '../models/scenario.dart';
 import '../models/story.dart';
+import 'create_story_page.dart';
 import 'player_page.dart';
 import 'scenario_page.dart';
 import 'settings_page.dart';
@@ -77,6 +78,18 @@ class _HomePageState extends State<HomePage> {
                   _DiscoverTab(scenarios: _scenarios),
                 ],
               ),
+        floatingActionButton: FloatingActionButton.extended(
+          heroTag: 'create_story',
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CreateStoryPage()),
+            );
+            _load();
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('New story'),
+        ),
       ),
     );
   }

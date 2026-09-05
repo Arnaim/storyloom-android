@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Storyloom adaptive launcher icon: solid dark-navy backdrop + the app mark
+     on the transparent foreground layer, so every launcher shape (circle,
+     squircle, rounded square) masks correctly with no white box. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>

@@ -21,18 +21,32 @@ const String storytellingRules = '''STORYTELLING RULES (follow exactly):
 5. Respect established world rules and NPC personalities. NPCs act on their own
    motivations; they are not automatically friendly and can lie, resist,
    remember slights, and pursue goals off-screen.
-6. Consequences are real. Dangerous choices can fail or cause harm. Do not
+6. NPCs are living people, not scripted roles. Their profiles describe who they
+   are at the start - their moods, attitudes and opinions toward the player must
+   react and evolve based on how the player actually behaves. Let them warm up,
+   cool down, change their minds, be surprised, joke, soften, or push back.
+   Never keep an NPC frozen in their initial attitude, never have them narrate
+   their own personality, and never reduce them to reciting their profile.
+7. Use ONLY the named characters provided in the NPC section (unnamed background
+   figures like vendors or crowds are fine). NEVER invent new named characters.
+8. Consequences are real. Dangerous choices can fail or cause harm. Do not
    instantly resolve every conflict; maintain tension and pacing.
-7. Vary sentence rhythm and sensory detail; avoid repeating earlier phrasing.
-8. Keep responses focused: roughly 2-5 short paragraphs unless the scene truly
-   demands more.''';
+9. Match your response length to what the moment needs. A quick exchange, a
+   simple beat, or a short reply from an NPC can be ONE sentence or a single
+   short paragraph. Only pivotal, complex, or high-tension moments justify 2-4
+   short paragraphs. NEVER pad or stretch a small moment to look substantial -
+   the shortest response that lands the beat is the right one.
+10. Vary sentence rhythm and sensory detail; avoid repeating earlier phrasing.''';
 
 const String outputContract = '''FORMAT:
 Write narrative prose only. No lists, no headings, no markdown formatting,
 no out-of-character remarks.
 For spoken dialogue use exactly this convention on its own line:
 Name: "What is said." optionally followed by a short beat of action on the same line.
-Internal thoughts of NPCs must be rendered through observable behaviour instead.''';
+Internal thoughts of NPCs must be rendered through observable behaviour instead.
+In the RECENT SCENE, player input labeled [ACTION] is something the player
+physically does or expresses; input labeled [SAY] is spoken out loud. Narrate
+the consequences of actions and have NPCs respond to spoken words appropriately.''';
 
 String ratingNote(String rating) {
   if (rating == 'mature') {
@@ -226,7 +240,7 @@ String buildScene(List<StoryMessage> recent) {
   final lines = <String>['### RECENT SCENE'];
   for (final m in recent) {
     if (m.isUser) {
-      lines.add('[PLAYER ACTION] ${m.content}');
+      lines.add('${m.isUserAction ? '[ACTION]' : '[SAY]'} ${m.content}');
     } else if (m.isSystem) {
       lines.add('[SYSTEM] ${m.content}');
     } else {
@@ -236,14 +250,21 @@ String buildScene(List<StoryMessage> recent) {
   return lines.join('\n\n');
 }
 
-String buildAction(String? actionText, {required bool isContinue}) {
+String buildAction(String? actionText, {required bool isContinue, bool isAction = false}) {
   if (isContinue) {
     return '### INSTRUCTION\n'
         'Continue the story naturally from exactly where the last message ended. '
         'Do not skip time unless the scene clearly calls for it.';
   }
   if (actionText != null && actionText.trim().isNotEmpty) {
-    return '### PLAYER ACTION\n$actionText';
+    final labeled = actionText.trim();
+    if (isAction) {
+      return '### PLAYER ACTION (something the player physically does or expresses)\n'
+          'The player does the following: $labeled\n'
+          'Narrate the direct consequences of this action.';
+    }
+    return '### PLAYER SPOKEN INPUT\nThe player says: $labeled\n'
+        'Respond to what was said.';
   }
   return '### INSTRUCTION\n'
       "The player's most recent action appears at the end of RECENT SCENE. "
@@ -264,6 +285,7 @@ class PromptBundle {
     required this.recent,
     this.actionText,
     this.isContinue = false,
+    this.actionIsAction = false,
   });
 
   final String system;
@@ -275,6 +297,7 @@ class PromptBundle {
   final List<StoryMessage> recent;
   final String? actionText;
   final bool isContinue;
+  final bool actionIsAction;
 
   String userMessage() {
     final parts = <String>[
@@ -284,7 +307,7 @@ class PromptBundle {
       buildNpcs(npcs),
       buildMemories(memories),
       buildScene(recent),
-      buildAction(actionText, isContinue: isContinue),
+      buildAction(actionText, isContinue: isContinue, isAction: actionIsAction),
     ].where((p) => p.trim().isNotEmpty);
     return parts.join('\n\n');
   }
@@ -317,20 +340,54 @@ $recentText
 
 Produce an updated summary (max 250 words): present tense, covering who the player is, key relationships and promises, unresolved conflicts, current goal. Drop resolved minutiae. Output the summary text only.''';
 
-String openingUserMessage(Scenario s, String characterContext) {
+String openingUserMessage(Scenario s, String characterContext, {String? npcContext}) {
+  final castBlock = (npcContext != null && npcContext.trim().isNotEmpty)
+      ? npcContext
+      : _npcSectionFromScenario(s);
   final parts = <String>[
     '### WORLD\n${s.worldDescription.isEmpty ? s.description : s.worldDescription}',
     if (s.premise.trim().isNotEmpty) '### PREMISE\n${s.premise}',
     characterContext,
+    ?castBlock,
     if (s.openingScene.trim().isNotEmpty)
       '### REQUIRED OPENING DIRECTION\nBegin the story here: ${s.openingScene}',
     '### INSTRUCTION\n'
-        'Write the opening scene (3-6 paragraphs): establish place, mood and situation, '
-        'then hand focus to the player at a natural decision point (no closing questions). '
-        'Introduce at most one or two NPCs.',
+        'Write the opening scene. Establish place, mood and situation, then hand '
+        'focus to the player at a natural decision point (no closing questions). '
+        'If the REQUIRED OPENING DIRECTION names or involves specific characters, they '
+        'MUST be the ones who appear, described exactly as their profiles above say - '
+        'same names, looks, and personalities. Only characters from the cast section may '
+        'appear as named characters. Length: 2-4 short paragraphs; keep it tight.',
     outputContract,
   ];
   return parts.where((p) => p.trim().isNotEmpty).join('\n\n');
+}
+
+/// Canonical NPC cards built straight from the scenario definition, so the
+/// opening scene can use the exact same cast the player read on the scenario
+/// page (and so new stories always start with the real characters).
+String? _npcSectionFromScenario(Scenario s) {
+  if (s.npcs.isEmpty) return null;
+  final cards = <String>[];
+  for (final n in s.npcs) {
+    final name = (n['name'] as String?)?.trim() ?? '';
+    if (name.isEmpty) continue;
+    final bits = <String>['${n['name']} [alive]'];
+    void add(String label, dynamic v, {int cap = 200}) {
+      final t = (v as String?)?.trim() ?? '';
+      if (t.isNotEmpty) bits.add('- $label: ${t.length > cap ? t.substring(0, cap) : t}');
+    }
+
+    add('Description', n['description']);
+    add('Personality', n['personality']);
+    add('Role/Class', n['profession_class'], cap: 80);
+    add('Speech style', n['speech_style'], cap: 120);
+    add('Goals', n['goals']);
+    add('Backstory', n['backstory_hook']);
+    cards.add(bits.join('\n'));
+  }
+  if (cards.isEmpty) return null;
+  return '### NPCs (simulate faithfully)\n\n${cards.join('\n\n')}';
 }
 
 extension _LastOrNull on List {

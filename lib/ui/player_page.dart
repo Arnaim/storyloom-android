@@ -35,6 +35,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
   bool _streaming = false;
   String _stream = '';
   bool _immersive = false;
+  bool _actionMode = false; // input mode: narrated action vs spoken dialogue
   int _localSeq = 0;
   String? _error;
 
@@ -44,7 +45,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
     _story = widget.story;
     _storyId = widget.story.id;
     _localSeq = widget.story.lastMessageSeq;
-    _reload();
+    _reload(scrollToBottom: true);
   }
 
   @override
@@ -54,7 +55,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
     super.dispose();
   }
 
-  Future<void> _reload() async {
+  Future<void> _reload({bool scrollToBottom = false}) async {
     final db = AppDatabase.instance;
     final story = await db.getStory(_storyId);
     final results = await Future.wait([
@@ -77,7 +78,9 @@ class _PlayerRouteState extends State<PlayerRoute> {
       _loading = false;
       if (_story.lastMessageSeq > _localSeq) _localSeq = _story.lastMessageSeq;
     });
-    _jumpToBottom(animated: false);
+    if (scrollToBottom) {
+      _jumpToBottom(animated: false);
+    }
   }
 
   void _onChunk(String delta) {
@@ -105,7 +108,8 @@ class _PlayerRouteState extends State<PlayerRoute> {
   // ------------------------------------------------------------------- //
   // Actions
   // ------------------------------------------------------------------- //
-  Future<void> _send(String text, {bool isContinue = false}) async {
+  Future<void> _send(String text,
+      {bool isContinue = false, bool isAction = false}) async {
     final trimmed = text.trim();
     if (_busy || (trimmed.isEmpty && !isContinue)) return;
     FocusScope.of(context).unfocus();
@@ -118,13 +122,15 @@ class _PlayerRouteState extends State<PlayerRoute> {
       _error = null;
     });
     if (!isContinue && trimmed.isNotEmpty) {
+      final actionFlag = isAction || StoryMessage.isActionSyntax(trimmed);
+      final clean = StoryMessage.stripActionSyntax(trimmed);
       _localSeq += 1;
       _messages.add(StoryMessage(
         storyId: _storyId,
         seq: _localSeq,
         role: 'user',
-        kind: 'action',
-        content: trimmed,
+        kind: actionFlag ? 'action' : 'speech',
+        content: clean,
       ));
       _input.clear();
       _jumpToBottom(animated: false);
@@ -134,6 +140,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
         _storyId,
         trimmed,
         isContinue: isContinue,
+        isAction: isAction,
         onChunk: _onChunk,
       );
     } on AiException catch (e) {
@@ -147,7 +154,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
           _streaming = false;
           _stream = '';
         });
-        await _reload();
+        await _reload(scrollToBottom: false);
       }
     }
   }
@@ -174,7 +181,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
           _streaming = false;
           _stream = '';
         });
-        await _reload();
+        await _reload(scrollToBottom: false);
       }
     }
   }
@@ -200,7 +207,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
           _busy = false;
           _streaming = false;
         });
-        await _reload();
+        await _reload(scrollToBottom: true);
       }
     }
   }
@@ -260,6 +267,8 @@ class _PlayerRouteState extends State<PlayerRoute> {
                 _send('', isContinue: true);
               case 'regenerate':
                 _regenerate();
+              case 'restart':
+                _confirmRestart();
               case 'delete':
                 _confirmDelete();
             }
@@ -274,6 +283,9 @@ class _PlayerRouteState extends State<PlayerRoute> {
             PopupMenuItem(value: 'regenerate',
                 child: ListTile(leading: Icon(Icons.refresh),
                     title: Text('Regenerate last'), contentPadding: EdgeInsets.zero)),
+            PopupMenuItem(value: 'restart',
+                child: ListTile(leading: Icon(Icons.restart_alt_outlined),
+                    title: Text('Restart story'), contentPadding: EdgeInsets.zero)),
             PopupMenuItem(value: 'delete',
                 child: ListTile(leading: Icon(Icons.delete_outline, color: Colors.redAccent),
                     title: Text('Delete story', style: TextStyle(color: Colors.redAccent)),
@@ -331,14 +343,22 @@ class _PlayerRouteState extends State<PlayerRoute> {
                 keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 children: [
                   for (final m in _messages) ...[
-                    _MessageView(
-                      message: m,
-                      onSuggestion: _send,
-                      onRegenerate: _messages.lastIndexWhere((x) =>
-                              !x.isUser && x.kind == 'narration') ==
-                          _messages.indexOf(m)
-                          ? (m.variants.isNotEmpty && !_busy ? _regenerate : null)
-                          : null,
+                    GestureDetector(
+                      onLongPress: () => _showMessageMenu(m),
+                      child: _MessageView(
+                        message: m,
+                        onSuggestion: _send,
+                        onRegenerate: _messages.lastIndexWhere((x) =>
+                                !x.isUser && x.kind == 'narration') ==
+                            _messages.indexOf(m)
+                            ? (m.variants.isNotEmpty && !_busy ? _regenerate : null)
+                            : null,
+                        isLastAssistantMessage: _messages.lastIndexWhere((x) =>
+                                !x.isUser && x.kind == 'narration') ==
+                            _messages.indexOf(m),
+                        onRewind: _rewindAndSend,
+                        messageSeq: m.seq,
+                      ),
                     ),
                     const SizedBox(height: 14),
                   ],
@@ -370,95 +390,310 @@ class _PlayerRouteState extends State<PlayerRoute> {
 
   void _retryLast() {
     if (_error == null) return;
-    final lastClient = _messages.lastWhere((m) => m.role == 'user',
+    final lastUser = _messages.lastWhere((m) => m.isUser,
         orElse: () => _messages.isEmpty
-            ? StoryMessage(storyId: 0, seq: 0, role: 'user', content: '')
-            : _messages.first);
-    if (lastClient.id == 0) {
+            ? StoryMessage(storyId: _storyId, seq: 0, role: 'user', content: '')
+            : StoryMessage(storyId: _storyId, seq: 0, role: 'user', content: ''));
+    if (lastUser.seq == 0) {
       _beginStory();
     } else {
-      _send(lastClient.content, isContinue: false);
+      _send(lastUser.content, isAction: lastUser.isUserAction);
     }
   }
 
+  /// Long-press menu on any message: delete it (and everything after), or
+  /// rewind the world to right after this message.
+  Future<void> _showMessageMenu(StoryMessage m) async {
+    if (_busy) return;
+    final isLast = m.seq == _messages.last.seq;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                m.isUser
+                    ? (m.isUserAction ? 'Your action' : 'You said')
+                    : m.isSystem
+                        ? m.content
+                        : (m.speaker.isNotEmpty ? m.speaker : 'Narration'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ),
+            if (!isLast)
+              ListTile(
+                leading: const Icon(Icons.undo),
+                title: const Text('Return to this point'),
+                subtitle: const Text('Delete everything after this message and continue from here'),
+                onTap: () => Navigator.pop(ctx, 'rewind'),
+              ),
+            ListTile(
+              leading: Icon(Icons.delete_outline,
+                  color: Theme.of(context).colorScheme.error),
+              title: Text('Delete from here',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              subtitle: Text(isLast
+                  ? 'Remove this message'
+                  : 'Remove this message and everything after it'),
+              onTap: () => Navigator.pop(ctx, 'delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'rewind') {
+      _rewindToPoint(m.seq);
+    } else if (action == 'delete') {
+      _confirmDeleteFrom(m.seq);
+    }
+  }
+
+  /// Pure rewind (no new action) — returns the world to right after [seq].
+  Future<void> _rewindToPoint(int seq) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Return to this point?'),
+        content: const Text(
+            'The story continues from this moment. Everything after it is removed, '
+            'and the world is restored to how it was.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Return')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final engine = context.read<AppState>().engine;
+    setState(() {
+      _busy = true;
+      _streaming = true;
+      _error = null;
+      _stream = '';
+    });
+    try {
+      await engine.rewindTo(_storyId, seq, '', onChunk: _onChunk);
+    } on AiException catch (e) {
+      _fail(e.message);
+    } catch (e) {
+      _fail('Could not return to that point.\n$e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _streaming = false;
+          _stream = '';
+        });
+        await _reload(scrollToBottom: false);
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteFrom(int seq) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete from here?'),
+        content: const Text(
+            'This message and everything after it will be permanently removed. '
+            'The world stays as it is right now.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await AppDatabase.instance.deleteMessagesAfterSeq(_storyId, seq - 1);
+    await _reload(scrollToBottom: false);
+  }
+
   Widget _buildInputBar() {
+    final scheme = Theme.of(context).colorScheme;
     final canContinue = !_busy && _messages.any((m) => !m.isUser);
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(26),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(_actionMode ? Icons.directions_run : Icons.chat_bubble_outline,
+                    size: 14, color: scheme.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _actionMode
+                        ? 'Action mode — narrate what you do: *i gazed at her*'
+                        : 'Speech mode — say it out loud. Type *like this* for a quick action.',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelSmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (canContinue)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: _busy ? null : () => _send('', isContinue: true),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.skip_next, size: 20),
-                          Text('Continue',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700)),
-                        ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 2, 12, 10),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(6, 4, 4, 4),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(26),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Say / Do mode toggle
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6, left: 2),
+                    child: Tooltip(
+                      message: _actionMode
+                          ? 'Switch to speech'
+                          : 'Switch to action (*like this*)',
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: _busy
+                            ? null
+                            : () => setState(() => _actionMode = !_actionMode),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: _actionMode
+                                ? scheme.primary
+                                : scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(_actionMode
+                                      ? Icons.directions_run
+                                      : Icons.chat_bubble_outline,
+                                  size: 16,
+                                  color: _actionMode
+                                      ? scheme.onPrimary
+                                      : scheme.onSurfaceVariant),
+                              const SizedBox(width: 4),
+                              Text(_actionMode ? 'Do' : 'Say',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color: _actionMode
+                                            ? scheme.onPrimary
+                                            : scheme.onSurfaceVariant,
+                                      )),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              Expanded(
-                child: TextField(
-                  controller: _input,
-                  enabled: !_busy,
-                  minLines: 1,
-                  maxLines: 4,
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.newline,
-                  decoration: const InputDecoration(
-                    hintText: 'What do you do?',
-                    border: InputBorder.none,
-                    filled: false,
+                  if (canContinue)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6, left: 4),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: _busy ? null : () => _send('', isContinue: true),
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.skip_next, size: 18),
+                              Text('Continue',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child: TextField(
+                      controller: _input,
+                      enabled: !_busy,
+                      minLines: 1,
+                      maxLines: 4,
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.newline,
+                      decoration: InputDecoration(
+                        hintText: _actionMode
+                            ? '*i gazed at her*'
+                            : 'What do you say?',
+                        border: InputBorder.none,
+                        filled: false,
+                      ),
+                      onSubmitted: (v) {
+                        if (v.trim().isNotEmpty) {
+                          _send(v, isAction: _actionMode);
+                        }
+                      },
+                    ),
                   ),
-                  onSubmitted: (v) {
-                    if (v.trim().isNotEmpty) _send(v);
-                  },
-                ),
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    height: 44,
+                    width: 44,
+                    child: IconButton.filled(
+                      tooltip: 'Send',
+                      onPressed: _busy
+                          ? null
+                          : () {
+                              if (_input.text.trim().isNotEmpty) {
+                                _send(_input.text, isAction: _actionMode);
+                              }
+                            },
+                      icon: _busy
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2.2),
+                            )
+                          : const Icon(Icons.arrow_upward),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 4),
-              SizedBox(
-                height: 44,
-                width: 44,
-                child: IconButton.filled(
-                  tooltip: 'Send',
-                  onPressed: _busy
-                      ? null
-                      : () {
-                          if (_input.text.trim().isNotEmpty) _send(_input.text);
-                        },
-                  icon: _busy
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2.2),
-                        )
-                      : const Icon(Icons.arrow_upward),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -505,6 +740,84 @@ class _PlayerRouteState extends State<PlayerRoute> {
       if (mounted) Navigator.of(context).pop();
     }
   }
+
+  Future<void> _confirmRestart() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Restart story?'),
+        content: Text(
+            'This will reset "${_story.title}" to the beginning. All progress will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Restart'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _restartStory();
+    }
+  }
+
+  Future<void> _restartStory() async {
+    if (_busy) return;
+    final engine = context.read<AppState>().engine;
+    setState(() {
+      _busy = true;
+      _streaming = true;
+      _error = null;
+      _stream = '';
+    });
+    try {
+      await engine.restartStory(_storyId);
+    } on AiException catch (e) {
+      _fail('Could not restart the story.\n${e.message}');
+    } catch (e) {
+      _fail('Could not restart the story.\n$e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _streaming = false;
+        });
+        await _reload(scrollToBottom: true);
+      }
+    }
+  }
+
+  Future<void> _rewindAndSend(int targetSeq, String actionText) async {
+    if (_busy) return;
+    final engine = context.read<AppState>().engine;
+    setState(() {
+      _busy = true;
+      _streaming = true;
+      _error = null;
+      _stream = '';
+    });
+    try {
+      await engine.rewindTo(_storyId, targetSeq, actionText, onChunk: _onChunk);
+    } on AiException catch (e) {
+      _fail('Could not rewind and continue.\n${e.message}');
+    } catch (e) {
+      _fail('Could not rewind and continue.\n$e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _streaming = false;
+          _stream = '';
+        });
+        await _reload(scrollToBottom: false);
+      }
+    }
+  }
+
 }
 
 /// Parses a narration into prose + dialogue blocks and renders them with
@@ -514,11 +827,17 @@ class _MessageView extends StatelessWidget {
     required this.message,
     required this.onSuggestion,
     required this.onRegenerate,
+    required this.isLastAssistantMessage,
+    required this.onRewind,
+    required this.messageSeq,
   });
 
   final StoryMessage message;
   final void Function(String, {bool isContinue}) onSuggestion;
   final VoidCallback? onRegenerate;
+  final bool isLastAssistantMessage;
+  final void Function(int targetSeq, String actionText) onRewind;
+  final int messageSeq;
 
   @override
   Widget build(BuildContext context) {
@@ -529,6 +848,7 @@ class _MessageView extends StatelessWidget {
 
   Widget _buildUser(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final isAction = message.isUserAction;
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -537,22 +857,32 @@ class _MessageView extends StatelessWidget {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: scheme.primaryContainer,
+          color: isAction
+              ? scheme.tertiaryContainer.withValues(alpha: 0.7)
+              : scheme.primaryContainer,
           borderRadius: BorderRadius.circular(18),
+          border: isAction
+              ? Border.all(color: scheme.tertiary.withValues(alpha: 0.5))
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text('YOU',
+            Text(isAction ? 'ACTION' : 'YOU',
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1,
-                    color: scheme.primary)),
+                    color: isAction ? scheme.tertiary : scheme.primary)),
             const SizedBox(height: 2),
-            SelectableText(message.content,
+            SelectableText(
+                isAction ? '\u2731 ${message.content}' : message.content,
                 style: TextStyle(
-                    color: scheme.onPrimaryContainer, height: 1.35)),
+                    color: isAction
+                        ? scheme.onTertiaryContainer
+                        : scheme.onPrimaryContainer,
+                    fontStyle: isAction ? FontStyle.italic : FontStyle.normal,
+                    height: 1.35)),
           ],
         ),
       ),
@@ -605,7 +935,13 @@ class _MessageView extends StatelessWidget {
               for (final s in message.suggestions)
                 ActionChip(
                   label: Text(s),
-                  onPressed: () => onSuggestion(s),
+                  onPressed: () {
+                    if (isLastAssistantMessage) {
+                      onSuggestion(s);
+                    } else {
+                      _showRewindChoice(context, s);
+                    }
+                  },
                 ),
               if (onRegenerate != null)
                 ActionChip(
@@ -625,6 +961,42 @@ class _MessageView extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  void _showRewindChoice(BuildContext context, String actionText) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Rewind to this point'),
+              subtitle: const Text('Delete later messages and continue from here'),
+              onTap: () {
+                Navigator.pop(ctx);
+                onRewind(messageSeq, actionText);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_forward),
+              title: const Text('Continue from now'),
+              subtitle: const Text('Add as new action at current timeline end'),
+              onTap: () {
+                Navigator.pop(ctx);
+                onSuggestion(actionText);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.cancel),
+              title: const Text('Cancel'),
+              onTap: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

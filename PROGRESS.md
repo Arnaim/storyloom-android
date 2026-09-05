@@ -1,6 +1,92 @@
 # Storyloom Android — Progress & Handoff Notes
 
-> Session ledger so any future session can pick up fast. Last updated: 2026-08-30.
+> Session ledger so any future session can pick up fast. Last updated: 2026-09-06.
+
+## Session 2b (2026-09-06): Launcher icon white-box fix
+
+**Symptom:** app icon appeared inside a white box on the launcher.
+**Root cause:** `ic_launcher.png` was a non-square RGB PNG (108×99, no alpha) of
+the logo with its dark background baked in; there was no adaptive icon, so
+modern launchers drew the legacy square icon on their own white circular
+backdrop → white ring/box around the mark.
+
+Fix (no new deps, generated with PIL — source of truth
+`assets/branding/logo.png`, purple mark spans ~69% of the canvas, centered):
+- Extracted the purple mark (bbox 42,38–256,248) as a transparent RGBA asset.
+- Adaptive icon: `mipmap-anydpi-v26/ic_launcher.xml` → color background
+  `#0E1620` (`values/ic_launcher_background.xml`) + `ic_launcher_foreground`
+  (mark at 62% of the 108dp canvas, inside the 66dp safe zone), all densities.
+- Legacy fallback `ic_launcher.png` regenerated: full square dark-navy + mark
+  at 68%, RGBA, all densities (no more RGB-no-alpha non-square icon).
+- Splash: `launch_image.png` (mark at 96dp base) on `@color/launch_background_color`
+  (#0E1620) via both `launch_background.xml` variants — matches the dark first
+  frame, no white flash. `values-v31/styles.xml` sets
+  `windowSplashScreenBackground` so the Android 12+ system splash is also dark.
+- Manifest label `storyloom` → `Storyloom`.
+- Verified: `flutter build apk --release` ✓; aapt2 dump shows mipmap/ic_launcher,
+  ic_launcher_foreground, launch_image in the APK; label = "Storyloom".
+
+## Session 2 (2026-09-06): UX overhaul, cast fidelity, actions, story creator
+
+Engine/prompt fixes:
+- **Opening cast injection (major bug fix):** `openingUserMessage()` never sent the
+  NPC cast to the model, so openings invented their own characters. The opening
+  prompt now includes full NPC cards (from DB, falling back to scenario JSON) plus
+  a hard rule: only cast members may appear as named characters.
+- **Adaptive reply length:** storytelling rule #9 tells the model to size the reply
+  to the moment (one sentence for small beats, 2-4 short paragraphs only for big
+  moments). Removed the old blanket "2-5 paragraphs" rule.
+- **NPC flexibility:** new rule #6 — NPCs are living people; moods/attitudes must
+  react to player behavior, never stay frozen in their profile.
+- **Action vs speech:** input wrapped in `*asterisks*` (or sent in Do mode) is a
+  narrated ACTION; plain text is spoken. Scene transcript labels them `[ACTION]` /
+  `[SAY]`; `StoryMessage.isUserAction` / `isActionSyntax` / `stripActionSyntax`
+  in `lib/models/story.dart`; prompt labels in `buildAction()`.
+- **restartStory** now wipes NPCs/quests/items/memories/snapshots (via
+  `AppDatabase.deleteWorldData`) and re-seeds the scenario cast — it used to leak
+  the previous run's world state.
+- **Rewind now restores the world exactly:** new `world_snapshots` table (DB v3)
+  stores full state + NPCs + quests + items after every turn. `rewindTo()`
+  restores from the checkpoint, deletes the abandoned timeline, persists the new
+  action as a proper user message, and works as a pure "return to this point"
+  (empty action) too.
+
+UI:
+- Player: Say/Do mode toggle, action hint strip, distinct ACTION bubbles
+  (tertiary container + italic), long-press any message → return-to-point /
+  delete-from-here menu, fixed `_retryLast` fallback bug.
+- Scenario page: hero cover with scrim, expandable cast cards (full About /
+  Personality / Speech / Backstory), AI-cover button ("AI art" / "Redo art").
+- Theme: refreshed dark palette, outlined cards, glow accents, layered
+  `GenreBanner` (gradient + radial glow + rings), richer ScenarioCard with
+  STORYLOOM/YOURS badge.
+- Home: "New story" FAB.
+
+New features:
+- **Story creator** (`lib/ui/create_story_page.dart`): 1-on-1 roleplay mode
+  (single character, dialogue-first narrator style, RPG off) and full story mode
+  (world/rules/tone/opening + NPC editor sheets). Cover + character images picked
+  from gallery (`image_picker`), copied into app docs dir, stored as absolute
+  paths in `cover_art` / npc `image`.
+- **AI cover art** (`lib/engine/cover_art.dart`): calls
+  `gemini-2.5-flash-image` over REST (`x-goog-api-key` header, TEXT+IMAGE
+  response modalities), saves PNG under docs/covers, updates scenario. Text-free
+  prompt by design. Requires a Gemini key; not available on OpenRouter-only keys.
+- DB: `insertScenario`, `deleteScenario`, `updateScenarioCover`, snapshot CRUD,
+  `countNarrationsUpTo`. DB version 3 (snapshot table migration).
+- Tests: `seed_data_test.dart` rewritten (old version expected a 23-scenario pack
+  that no longer exists); now validates actual seed titles + cover round-trip.
+
+Not yet done (carry-over + new):
+- On-device end-to-end testing of: Do-mode turns, long-press rewind/delete,
+  story creator (both modes), AI cover generation (needs Gemini key + quota).
+- Release signing keystore (still debug-signed).
+- OpenRouter has no image model — AI covers are Gemini-key-only (graceful
+  error already handled).
+- Stretch: NPC avatar display in player info sheet (npc `image` field is
+  already persisted from the creator).
+
+---
 
 ## Objective
 Turn Storyloom (the web app at `/mnt/data2/AI model/storybot`) into a standalone

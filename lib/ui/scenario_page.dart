@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../data/database.dart';
+import '../engine/cover_art.dart';
+import '../engine/gemini_api.dart';
 import '../models/character.dart';
 import '../models/scenario.dart';
 import 'player_page.dart';
@@ -22,8 +24,43 @@ class ScenarioPage extends StatefulWidget {
 
 class _ScenarioPageState extends State<ScenarioPage> {
   bool _starting = false;
+  bool _generatingCover = false;
+  late Scenario _scenario = widget.scenario;
 
-  Scenario get scenario => widget.scenario;
+  Scenario get scenario => _scenario;
+
+  /// Generates AI cover art for this scenario with the user's Gemini key.
+  Future<void> _generateCover() async {
+    if (_generatingCover) return;
+    final apiKey = context.read<AppState>().settings.apiKey.trim();
+    if (apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Add a Gemini API key in Settings first.')));
+      return;
+    }
+    setState(() => _generatingCover = true);
+    try {
+      final service = CoverArtService(apiKey: apiKey);
+      final bytes = await service.generate(CoverArtService.promptFor(scenario));
+      final path = await service.saveCover(scenario.id, bytes);
+      await AppDatabase.instance.updateScenarioCover(scenario.id, path);
+      final updated = await AppDatabase.instance.getScenario(scenario.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cover art added!')));
+      if (updated != null) setState(() => _scenario = updated);
+    } on AiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cover generation failed:\n$e')));
+    } finally {
+      if (mounted) setState(() => _generatingCover = false);
+    }
+  }
 
   Future<void> _beginFlow() async {
     final app = context.read<AppState>();
@@ -111,59 +148,76 @@ class _ScenarioPageState extends State<ScenarioPage> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          ScenarioCover(scenario: scenario, height: 170),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        scenario.title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w800),
-                      ),
+          // Hero header: cover with a gradient scrim and the title overlaid.
+          Stack(
+            children: [
+              ScenarioCover(scenario: scenario, height: 200),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        scheme.surface.withValues(alpha: 0.55),
+                        scheme.surface,
+                      ],
+                      stops: const [0.45, 0.8, 1.0],
                     ),
-                    _RatingBadge(mature: isMature),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    TagChip(scenario.genre),
-                    for (final t in scenario.tags.take(5)) TagChip(t),
-                  ],
+              ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: _RatingBadge(mature: isMature),
+              ),
+              Positioned(
+                top: 12,
+                left: 12,
+                child: _CoverButton(
+                  busy: _generatingCover,
+                  hasArt: scenario.coverArt != null && scenario.coverArt!.isNotEmpty,
+                  onTap: _generateCover,
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  scenario.description,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(color: scheme.primary),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'PREMISE',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                Text(scenario.premise, style: Theme.of(context).textTheme.bodyMedium),
-                if (scenario.playerRole.trim().isNotEmpty) ...[
+              ),
+            ],
+          ),
+          Transform.translate(
+            offset: const Offset(0, -18),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    scenario.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      TagChip(scenario.genre),
+                      for (final t in scenario.tags.take(5)) TagChip(t),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    scenario.description,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(color: scheme.primary),
+                  ),
                   const SizedBox(height: 16),
                   Text(
-                    'YOUR ROLE',
+                    'PREMISE',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           letterSpacing: 1.2,
                           fontWeight: FontWeight.w700,
@@ -171,53 +225,68 @@ class _ScenarioPageState extends State<ScenarioPage> {
                         ),
                   ),
                   const SizedBox(height: 6),
-                  Text(scenario.playerRole, style: Theme.of(context).textTheme.bodyMedium),
-                ],
-                if (scenario.rules.trim().isNotEmpty) ...[
-                  const SizedBox(height: 16),
+                  Text(scenario.premise, style: Theme.of(context).textTheme.bodyMedium),
+                  if (scenario.playerRole.trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'YOUR ROLE',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(scenario.playerRole, style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                  if (scenario.rules.trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'WORLD RULES',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(scenario.rules, style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                  if (scenario.npcs.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _sectionLabel(
+                        'CAST · ${scenario.npcs.length} CHARACTERS (tap to read full profile)',
+                        scheme),
+                    const SizedBox(height: 8),
+                    for (final n in scenario.npcs) _NpcCard(npc: n),
+                  ],
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: _starting ? null : _beginFlow,
+                    icon: _starting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_stories_outlined),
+                    label: Text(_starting ? 'Summoning the scene…' : 'Begin Story'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
-                    'WORLD RULES',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          letterSpacing: 1.2,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurfaceVariant,
-                        ),
+                    'You will choose or create your character next. '
+                     'Generate with your own API key.',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 6),
-                  Text(scenario.rules, style: Theme.of(context).textTheme.bodyMedium),
                 ],
-                if (scenario.npcs.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  _sectionLabel('CAST', scheme),
-                  const SizedBox(height: 6),
-                  for (final n in scenario.npcs.take(6)) _NpcRow(npc: n),
-                ],
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: _starting ? null : _beginFlow,
-                  icon: _starting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.auto_stories_outlined),
-                  label: Text(_starting ? 'Summoning the scene…' : 'Begin Story'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'You will choose or create your character next. '
-                   'Generate with your own API key.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: scheme.onSurfaceVariant),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+              ),
             ),
           ),
         ],
@@ -233,6 +302,58 @@ class _ScenarioPageState extends State<ScenarioPage> {
               color: scheme.onSurfaceVariant,
             ),
       );
+}
+
+/// Small pill button on the cover: "AI art" (generate) or "refresh" when art
+/// already exists. Shows a spinner while generating.
+class _CoverButton extends StatelessWidget {
+  const _CoverButton({
+    required this.busy,
+    required this.hasArt,
+    required this.onTap,
+  });
+
+  final bool busy;
+  final bool hasArt;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: busy ? null : onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (busy)
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(strokeWidth: 1.6, color: Colors.white),
+              )
+            else
+              Icon(hasArt ? Icons.refresh : Icons.auto_awesome,
+                  size: 14, color: Colors.white),
+            const SizedBox(width: 5),
+            Text(
+              busy ? 'Painting…' : (hasArt ? 'Redo art' : 'AI art'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _RatingBadge extends StatelessWidget {
@@ -262,47 +383,122 @@ class _RatingBadge extends StatelessWidget {
   }
 }
 
-class _NpcRow extends StatelessWidget {
-  const _NpcRow({required this.npc});
+/// Expandable cast card: collapsed shows avatar + name + role; expanded shows
+/// the character's full profile (description, personality, speech style,
+/// backstory) so players can actually read who they'll meet.
+class _NpcCard extends StatefulWidget {
+  const _NpcCard({required this.npc});
 
   final Map<String, dynamic> npc;
 
   @override
+  State<_NpcCard> createState() => _NpcCardState();
+}
+
+class _NpcCardState extends State<_NpcCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final name = (npc['name'] as String?) ?? '?';
-    final desc = (npc['description'] as String?) ?? '';
+    final npc = widget.npc;
+    final scheme = Theme.of(context).colorScheme;
+    final name = ((npc['name'] as String?) ?? '').trim();
+    final role = ((npc['profession_class'] as String?) ?? '').trim();
+    final desc = ((npc['description'] as String?) ?? '').trim();
+    final personality = ((npc['personality'] as String?) ?? '').trim();
+    final speech = ((npc['speech_style'] as String?) ?? '').trim();
+    final backstory = ((npc['backstory_hook'] as String?) ?? '').trim();
+
+    final fields = <(String, String)>[
+      if (desc.isNotEmpty) ('About', desc),
+      if (personality.isNotEmpty) ('Personality', personality),
+      if (speech.isNotEmpty) ('Speech', speech),
+      if (backstory.isNotEmpty) ('Backstory', backstory),
+    ];
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: gradientColorFor(name).withValues(alpha: 0.4),
-            child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
-                style: const TextStyle(fontWeight: FontWeight.w800)),
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => setState(() => _expanded = !_expanded),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-                if (desc.isNotEmpty)
-                  Text(
-                    desc,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: gradientColorFor(name).withValues(alpha: 0.45),
+                    child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
+                        style: const TextStyle(fontWeight: FontWeight.w800)),
                   ),
-              ],
-            ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w800)),
+                        if (role.isNotEmpty)
+                          Text(role,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: scheme.primary)),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(Icons.expand_more,
+                        size: 20, color: scheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 180),
+                crossFadeState: _expanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                firstChild: const SizedBox(width: double.infinity),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final (label, text) in fields) ...[
+                        Text(label.toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  letterSpacing: 1,
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.onSurfaceVariant,
+                                )),
+                        const SizedBox(height: 2),
+                        SelectableText(text,
+                            style: Theme.of(context).textTheme.bodyMedium),
+                        const SizedBox(height: 8),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

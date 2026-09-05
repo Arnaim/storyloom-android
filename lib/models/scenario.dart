@@ -50,6 +50,31 @@ class Scenario {
 
   String get ratingLabel => contentRating == 'mature' ? 'Mature' : 'General';
 
+  Scenario copyWith({String? coverArt}) => Scenario(
+        id: id,
+        title: title,
+        description: description,
+        genre: genre,
+        tags: tags,
+        premise: premise,
+        openingScene: openingScene,
+        worldDescription: worldDescription,
+        rules: rules,
+        tone: tone,
+        narratorStyle: narratorStyle,
+        contentRating: contentRating,
+        rpgEnabled: rpgEnabled,
+        playerRole: playerRole,
+        npcs: npcs,
+        locations: locations,
+        lore: lore,
+        openingSuggestions: openingSuggestions,
+        isSample: isSample,
+        playCount: playCount,
+        author: author,
+        coverArt: coverArt ?? this.coverArt,
+      );
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,

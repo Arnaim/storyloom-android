@@ -23,7 +23,7 @@ class AppDatabase {
     final path = p.join(dir, 'storyloom.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE scenarios (
@@ -124,6 +124,14 @@ class AppDatabase {
             created_seq INTEGER DEFAULT 0
           )
         ''');
+        await db.execute('''
+          CREATE TABLE world_snapshots (
+            story_id INTEGER NOT NULL,
+            seq INTEGER NOT NULL,
+            snapshot TEXT NOT NULL,
+            PRIMARY KEY (story_id, seq)
+          )
+        ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -140,6 +148,16 @@ class AppDatabase {
             }, conflictAlgorithm: ConflictAlgorithm.ignore);
           }
           await batch.commit(noResult: true);
+        }
+        if (oldVersion < 3) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS world_snapshots (
+              story_id INTEGER NOT NULL,
+              seq INTEGER NOT NULL,
+              snapshot TEXT NOT NULL,
+              PRIMARY KEY (story_id, seq)
+            )
+          ''');
         }
       },
     );
@@ -192,6 +210,27 @@ class AppDatabase {
     final db = await instance.db;
     final rows = await db.query('scenarios', orderBy: 'is_sample DESC, title COLLATE NOCASE');
     return rows.map((r) => Scenario.fromJson(_decodeScenarioRow(r))).toList();
+  }
+
+  /// Persists a new (or replaces an existing) scenario row. Used by the
+  /// story creator for user-built scenarios (is_sample = 0).
+  Future<int> insertScenario(Scenario s) async {
+    final db = await instance.db;
+    return db.insert('scenarios', {
+      ..._scenRow(s),
+      'id': s.id > 0 ? s.id : null,
+    });
+  }
+
+  Future<void> deleteScenario(int id) async {
+    final db = await instance.db;
+    await db.delete('scenarios', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> updateScenarioCover(int id, String path) async {
+    final db = await instance.db;
+    await db.update('scenarios', {'cover_art': path},
+        where: 'id = ?', whereArgs: [id]);
   }
 
   Future<Scenario?> getScenario(int id) async {
@@ -337,12 +376,33 @@ class AppDatabase {
     for (final table in ['npcs', 'quests', 'inventory_items', 'memories', 'messages']) {
       await db.delete(table, where: 'story_id = ?', whereArgs: [id]);
     }
+    await db.delete('world_snapshots', where: 'story_id = ?', whereArgs: [id]);
     await db.delete('stories', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Removes every world-state row for a story (used by "restart"): the story
+  /// row itself and its scenario link are kept.
+  Future<void> deleteWorldData(int storyId) async {
+    final db = await instance.db;
+    for (final table in ['npcs', 'quests', 'inventory_items', 'memories']) {
+      await db.delete(table, where: 'story_id = ?', whereArgs: [storyId]);
+    }
+    await db.delete('world_snapshots', where: 'story_id = ?', whereArgs: [storyId]);
   }
 
   Future<void> deleteMessageById(int id) async {
     final db = await instance.db;
     await db.delete('messages', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> deleteAllMessages(int storyId) async {
+    final db = await instance.db;
+    await db.delete('messages', where: 'story_id = ?', whereArgs: [storyId]);
+  }
+
+  Future<void> deleteMessagesAfterSeq(int storyId, int seq) async {
+    final db = await instance.db;
+    await db.delete('messages', where: 'story_id = ? AND seq > ?', whereArgs: [storyId, seq]);
   }
 
   // ------------------------------------------------------------------- //
@@ -637,5 +697,81 @@ class AppDatabase {
     );
     if (rows.isEmpty) return 0;
     return (rows.first['created_seq'] as num?)?.toInt() ?? 0;
+  }
+
+  // ------------------------------------------------------------------- //
+  // World snapshots (for rewind-to-point)
+  // ------------------------------------------------------------------- //
+
+  /// Saves the full world state (state map + npcs + quests + items) as it was
+  /// right after the turn ending at [seq]. Replaces any snapshot at that seq.
+  Future<void> saveWorldSnapshot(int storyId, int seq, Map<String, dynamic> snapshot) async {
+    final db = await instance.db;
+    await db.insert(
+      'world_snapshots',
+      {'story_id': storyId, 'seq': seq, 'snapshot': jsonEncode(snapshot)},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Deletes snapshots newer than [seq] (abandoned timeline after a rewind).
+  Future<void> deleteSnapshotsAfterSeq(int storyId, int seq) async {
+    final db = await instance.db;
+    await db.delete('world_snapshots',
+        where: 'story_id = ? AND seq > ?', whereArgs: [storyId, seq]);
+  }
+
+  /// Restores NPCs, quests and inventory from a [worldSnapshotAt] payload.
+  Future<void> restoreWorldData(int storyId, Map<String, dynamic> snapshot) async {
+    final db = await instance.db;
+    final batch = db.batch();
+    batch.delete('npcs', where: 'story_id = ?', whereArgs: [storyId]);
+    batch.delete('quests', where: 'story_id = ?', whereArgs: [storyId]);
+    batch.delete('inventory_items', where: 'story_id = ?', whereArgs: [storyId]);
+    for (final n in (snapshot['npcs'] as List? ?? const [])) {
+      if (n is Map) {
+        batch.insert('npcs', {
+          ...Map<String, dynamic>.from(n),
+          'id': null,
+          'story_id': storyId,
+          'details': jsonEncode(n['details'] ?? {}),
+        });
+      }
+    }
+    for (final q in (snapshot['quests'] as List? ?? const [])) {
+      if (q is Map) {
+        batch.insert('quests', {...Map<String, dynamic>.from(q), 'id': null, 'story_id': storyId});
+      }
+    }
+    for (final i in (snapshot['items'] as List? ?? const [])) {
+      if (i is Map) {
+        batch.insert('inventory_items',
+            {...Map<String, dynamic>.from(i), 'id': null, 'story_id': storyId});
+      }
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Number of assistant narration messages at or before [seq].
+  Future<int> countNarrationsUpTo(int storyId, int seq) async {
+    final db = await instance.db;
+    final count = Sqflite.firstIntValue(await db.rawQuery(
+        "SELECT COUNT(*) FROM messages WHERE story_id = ? AND seq <= ? AND role = 'assistant' AND kind = 'narration'",
+        [storyId, seq]));
+    return count ?? 0;
+  }
+
+  /// Latest snapshot at or before [seq], or null when none exists.
+  Future<Map<String, dynamic>?> worldSnapshotAt(int storyId, int seq) async {
+    final db = await instance.db;
+    final rows = await db.query(
+      'world_snapshots',
+      where: 'story_id = ? AND seq <= ?',
+      whereArgs: [storyId, seq],
+      orderBy: 'seq DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return _decodeMap(rows.first['snapshot']);
   }
 }
