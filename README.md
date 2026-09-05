@@ -11,6 +11,8 @@ sync. Characters, quests, world state, and your entire history are stored in a l
 SQLite database. The only network calls are to AI APIs, using **your own API key**
 (Bring Your Own Key).
 
+![Storyloom screenshot](demo.jpeg)
+
 ## Features
 
 - **10 built-in scenarios** — fantasy academy, isekai, cyberpunk, post-apocalyptic,
