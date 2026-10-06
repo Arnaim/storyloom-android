@@ -552,7 +552,7 @@ class _CharacterSheetState extends State<_CharacterSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Create your character',
+            Text('About you',
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge

@@ -1,6 +1,128 @@
 # Storyloom Android — Progress & Handoff Notes
 
-> Session ledger so any future session can pick up fast. Last updated: 2026-09-06.
+> Session ledger so any future session can pick up fast. Last updated: 2026-10-06 (Phase 1 + Phase 2 + Phase 3 done; Phase 4 next).
+
+## Session 4 (2026-10-06): Scenario library expansion (Phase 3 — DONE)
+
+**What:** Expanded the scenario library from 10 to 16 with deeper premises, richer casts, and fork-branching on every scenario.
+
+**Done:**
+- **seed_scenarios.dart** fully rewritten cleanly (was broken from incremental edits). All 16 scenarios compiled, analyzed, and tested.
+- **Arcanum Academy upgraded** with storyexample.txt version: 11 NPCs (Valeria, Sera, Kira, Elena, Rhea, Terra, Lune, Mira, Flynn, Cassius, Matthias), 7-element Archive system, faction war (Traditionalists vs Progressives vs Ancients), merit ranking, high-stakes dueling, hidden mysteries (Founder's Office, The Big Hive, Student Disappearances), 3 forks (allied / rebel / independent).
+- **My Bullies Got Isekaied Too!** added as a new scenario from storyexample.txt: 5 NPCs (Riko, Rei, Akane, Kana, Yui), dungeon survival, 3 forks (protect / dominate / abandon).
+- **6 new scenarios added:**
+  1. Cast Out by the Kingdom — male prince/exile, demi-human companions (fox/elf/cat/mouse/wolf girls), slow-burn romance, 3 forks (reclaim / new_family / revenge)
+  2. Hero Academy: Underdog — male underdog with unique hidden power, no quirk system, 3 forks (reveal / hide / leave)
+  3. Tower of Ascension — ORV/gods style, infinite tower, mythical beings, 3 forks (solo / party / betray)
+  4. Zombie Apocalypse: Last Light — mixed cast, dynamic recruitment, 3 forks (trust_all / selective / solo)
+  5. Wholesome Isekai: Walking Path — simple adventure, no OP system, 3 forks (settle / walk / help)
+- **All 10 existing scenarios** updated with forks (previously had none): Kicked to the Curb, The Extra in the Villainess Story, The Ninth Hour, Low Orbit: ELLEN, The Hollow Crown, Analog Heart, Fault Lines, plus Arcanum Academy and My Entire Class Got Isekaied already had forks from earlier session.
+- **All scenarios** follow the detailed storyexample.txt pattern: rich premise, world description, rules, tone, narrator style, 10+ NPCs with personalities/backstory hooks, locations, lore, opening suggestions, cover art, and 2-3 forks each.
+
+**storyexample.txt used for:**
+1. **UPDATE** — Arcanum Academy: replaced old premise with "The Hidden World / The Masquerade" version from storyexample.txt (7-element Archive, faction war, merit ranking, high-stakes dueling, hidden mysteries, First-Generation Mage opening, Elena cast).
+2. **NEW** — My Bullies Got Isekaied Too!: added as a separate dungeon survival scenario from storyexample.txt (Riko/Rei/Akane/Kana/Yui cast).
+
+## Session 3b (2026-10-06): Branching engine (Phase 1)
+
+**What:** Core branching/divergence machinery so stories no longer
+follow a single fixed path.
+
+**Changes:**
+- `world_state.dart`: `defaultState` now includes `branching` map
+  (`act`, `branch`, `arc_progress`, `tone`) plus helpers
+  `currentBranch/Act/ArcProgress/Tone`.
+- `models/scenario.dart`: new `Fork` + `ForkTrigger` classes with
+  `toJson`/`fromJson`; `Scenario.forks` field, wired into
+  `copyWith`/`toJson`/`fromJson`.
+- `story_engine.dart`: `_checkForks` + `_triggerMatches` + `_compare`
+  — after each analysis, evaluates scenario forks against current
+  world + NPC state; on match switches `branch` and advances `act`;
+  records a system event. Hooked into `applyAnalysisToWorld` which
+  is called by `runTurn`, `regenerate`, `rewindTo`, `generateOpening`.
+- `prompt_builder.dart`: `buildStateSection` now prints `BRANCH`,
+  `Act`, `Tone/mood`; `openingUserMessage` accepts optional `state`
+  and uses `fork.openingScene` when a branch is active.
+- `seed_scenarios.dart`: Arcanum Academy gets two forks
+  (allied/rebel) with fact-triggered conditions + branch-specific
+  opening scenes.
+
+**Result:** Stories can now pivot — the model sees `BRANCH: X` and
+branch-specific opening text every turn, and forks fire automatically
+when triggers (relationship/fact/flag thresholds) are met.
+
+**Still pending:** Phase 2 cast persistence (NPC memory, background
+sim, relationship drift), Phase 3 genre expansion, Phase 4 creator
+refinement, Phase 5 polish.
+
+## Session 3c (2026-10-06): Cast persistence (Phase 2)
+
+**What:** Characters no longer fade into the background. Four changes:
+
+1. **Per-NPC memory table** (`npc_memories` in DB v4, `NPCMemory` model
+   in `story.dart`, CRUD in `database.dart`). `buildNpcs` injects each
+   NPC's last 3 personal memories into their card so the model knows
+   what they remember about the player. Bounded to 6 per NPC.
+
+2. **Relationship drift** (`_applyRelationshipDrift` in `story_engine.dart`).
+   NPCs not mentioned in a turn's `npc_updates` lose 0.5 relationship
+   and get an updated emotional-state label (devoted/friendly/neutral/wary/hostile).
+   Prevents frozen relationships.
+
+3. **NPC memory pinning** (`_pinNpcMemories`). Relationship deltas,
+   emotional states, and locations reported by the model are pinned
+   as per-NPC facts so they resurface in future prompts.
+
+4. **Uncapped cast** (`buildNpcs limit=14` + overflow "BACKGROUND N more"
+   summary line). Arcanum's 16 NPCs now all appear in the prompt.
+
+**DB migration:** v3 → v4 (`npc_memories` table).
+
+**Still pending:** Phase 3 genre expansion, Phase 4 creator refinement,
+Phase 5 polish.
+
+**What prompted:** User critique — stories follow a fixed path, chars fade into
+background, only 10 scenarios, "create your character" label confusion,
+created-story images don't show in library, needs more genres.
+
+**Diagnosis (verified in code):**
+- `story_engine.dart` + `prompt_builder.dart`: no branching engine; single
+  fixed `opening_scene` per scenario; `buildNpcs` caps cast at 8 (Arcanum
+  has 16); no off-screen NPC simulation; no plot-state tracking.
+- `widgets.dart` `StoryTile`: never renders story cover — shows letter avatar
+  only, so created-story images "don't show".
+- `create_story_page.dart`: 1-on-1 NPC section labeled "YOUR CHARACTER",
+  then player sheet also "Your character" — confusing collision.
+- `assets/covers/`: only `scenario1.jpg` exists; scenarios 2–10 reference
+  missing files → GenreBanner fallback (confirmed).
+
+**Plan written** (detailed in this session): 4-phase roadmap — Phase 0 quick
+wins, Phase 1 branching engine, Phase 2 cast persistence, Phase 3 genre
+expansion, Phase 4 creator overhaul, Phase 5 polish/retention.
+
+**Done now:**
+- UI/UX quick win #2: renamed 1-on-1 section "WHO YOU'LL MEET" and player
+  sheet "About you" (`create_story_page.dart`, `scenario_page.dart`).
+- UI/UX quick win #6: template-driven creator — 12 genre templates
+  (8 full-story, 4 1-on-1) with pre-filled tone/world/rules; horizontal
+  picker grid in creator; templates seed defaults without overwriting
+  user edits (`create_story_page.dart`).
+- Visual identity overhaul: "Ink & Ember" warm literary palette replacing
+  generic purple — burnished bronze `#C8956C`, ink `#0C0A0F`, plum `#171320`,
+  leather `#8B6F4A`, ember `#B85A44`. Updated `theme.dart` fully
+  (text theme, input decorations, bottom sheet, dialog, tabs, snackbar).
+- Genre-specific icons in `widgets.dart` (`genreIconFor`) so cover banners
+  and GenreBanner show distinct glyphs per genre.
+
+**Not yet done (next step):**
+- Phase 0 #1: cover art for all 10 seed scenarios + StoryTile cover render
+  (skipped — no images available).
+- Phase 1: branching engine (story_state, forks, divergence scoring).
+- Phase 2: cast persistence (per-NPC memory, background sim, relationship
+  drift).
+- Phase 3: genre expansion to 40+ scenarios.
+- Phase 4: template creator refinement, AI cast art.
+- Phase 5: onboarding, age gate, performance.
 
 ## Session 2b (2026-09-06): Launcher icon white-box fix
 
@@ -234,3 +356,10 @@ export ANDROID_HOME=/mnt/data2/android-toolchain/android-sdk
   `Schema.enumString(...)`, `Schema.array(items:)`.
 - `.../model.dart` → `GenerativeModel(model:, apiKey:, generationConfig:, systemInstruction:)`,
   `generateContent([])`, `generateContentStream([])` → each `GenerateContentResponse.text`.
+
+ 11. **Phase 3 — Scenario expansion** (2026-10-06):
+     - `seed_scenarios.dart` fully rewritten with 16 scenarios (was broken from incremental edits).
+     - Arcanum Academy upgraded with storyexample.txt version.
+     - My Bullies Got Isekaied Too! added from storyexample.txt.
+     - 6 new scenarios: Cast Out by the Kingdom, Hero Academy: Underdog, Tower of Ascension, Zombie Apocalypse: Last Light, Wholesome Isekai: Walking Path.
+     - All 16 scenarios have 2-3 forks each.

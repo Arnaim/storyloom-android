@@ -118,6 +118,7 @@ class Story {
     this.createdAt = 0,
     this.updatedAt = 0,
     this.lastPlayedAt = 0,
+    this.coverArt,
   });
 
   final int id;
@@ -131,6 +132,7 @@ class Story {
   final int createdAt;
   final int updatedAt;
   final int lastPlayedAt;
+  final String? coverArt;
 
   Story copyWith({
     String? title,
@@ -140,6 +142,7 @@ class Story {
     Map<String, dynamic>? currentState,
     int? updatedAt,
     int? lastPlayedAt,
+    String? coverArt,
   }) =>
       Story(
         id: id,
@@ -153,6 +156,7 @@ class Story {
         createdAt: createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
+        coverArt: coverArt ?? this.coverArt,
       );
 }
 
@@ -311,6 +315,47 @@ class Memory {
         storyId: (j['story_id'] as num?)?.toInt() ?? 0,
         kind: (j['kind'] as String?) ?? 'fact',
         text: (j['text'] as String?) ?? '',
+        importance: (j['importance'] as num?)?.toDouble() ?? 0.5,
+        active: (j['active'] == 1 || j['active'] == true),
+        createdSeq: (j['created_seq'] as num?)?.toInt() ?? 0,
+      );
+}
+
+/// Per-NPC memory — what a specific character remembers about the player.
+class NPCMemory {
+  NPCMemory({
+    this.id = 0,
+    required this.storyId,
+    required this.npcName,
+    required this.fact,
+    this.importance = 0.5,
+    this.active = true,
+    this.createdSeq = 0,
+  });
+
+  final int id;
+  final int storyId;
+  final String npcName;
+  final String fact;
+  final double importance;
+  final bool active;
+  final int createdSeq;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'story_id': storyId,
+        'npc_name': npcName,
+        'fact': fact,
+        'importance': importance,
+        'active': active ? 1 : 0,
+        'created_seq': createdSeq,
+      };
+
+  factory NPCMemory.fromJson(Map<String, dynamic> j) => NPCMemory(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        storyId: (j['story_id'] as num?)?.toInt() ?? 0,
+        npcName: (j['npc_name'] as String?) ?? '',
+        fact: (j['fact'] as String?) ?? '',
         importance: (j['importance'] as num?)?.toDouble() ?? 0.5,
         active: (j['active'] == 1 || j['active'] == true),
         createdSeq: (j['created_seq'] as num?)?.toInt() ?? 0,

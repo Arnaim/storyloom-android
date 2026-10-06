@@ -9,11 +9,9 @@ import '../data/settings.dart';
 import '../models/analysis.dart';
 import 'prompt_builder.dart';
 
-/// The only class that talks to Gemini (and OpenRouter as an alternative).
-///
-/// Maps SDK/network failures to [AiException]. Transient failures are retried
-/// with backoff until the first token of a stream; quota errors are never
-/// retried. Once narration is flowing we never replay already-emitted text.
+/// Service for AI model interaction — supports Google Gemini, OpenRouter, and
+/// any OpenAI-compatible API (e.g., FreeLLMAPI, Ollama, LM Studio, Groq, DeepSeek,
+/// or custom localhost servers).
 class GeminiService {
   GeminiService({required this._settings}) {
     _modelName = _settings.model;
@@ -23,26 +21,68 @@ class GeminiService {
   late String _modelName;
 
   static const _maxAttempts = 3;
-  static const _openRouterBaseUrl = 'https://openrouter.ai/api/v1';
 
-  bool get _isOpenRouter => isOpenRouterModel(_modelName);
+  bool get _useOpenAiFormat =>
+      _settings.providerType == 'openrouter' ||
+      _settings.providerType == 'custom' ||
+      _settings.apiBaseUrl.trim().isNotEmpty ||
+      isOpenRouterModel(_modelName);
+
+  String get _chatCompletionsUrl {
+    if (_settings.providerType == 'openrouter' ||
+        isOpenRouterModel(_modelName)) {
+      return 'https://openrouter.ai/api/v1/chat/completions';
+    }
+    var url = _settings.apiBaseUrl.trim();
+    if (url.isEmpty) return 'https://openrouter.ai/api/v1/chat/completions';
+    if (url.endsWith('/chat/completions')) return url;
+    if (url.endsWith('/')) url = url.substring(0, url.length - 1);
+    return '$url/chat/completions';
+  }
+
+  String get _effectiveModelId {
+    if (_settings.providerType == 'openrouter' ||
+        isOpenRouterModel(_modelName)) {
+      return openRouterModelId(_modelName);
+    }
+    return _settings.model.trim();
+  }
+
+  Map<String, String> get _openaiHeaders {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+    final key = _settings.apiKey.trim();
+    if (key.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $key';
+    }
+    if (_settings.providerType == 'openrouter' ||
+        isOpenRouterModel(_modelName)) {
+      headers['HTTP-Referer'] = 'https://storyloom.app';
+      headers['X-Title'] = 'Storyloom';
+    }
+    return headers;
+  }
 
   GenerativeModel _model({GenerationConfig? config, Content? system}) =>
       GenerativeModel(
-        model: _isOpenRouter ? openRouterModelId(_modelName) : _modelName,
+        model: _effectiveModelId,
         apiKey: _settings.apiKey.trim(),
         generationConfig: config,
         systemInstruction: system,
       );
 
-  bool get configured => _settings.apiKey.trim().isNotEmpty;
+  bool get configured =>
+      _settings.apiKey.trim().isNotEmpty ||
+      _settings.apiBaseUrl.trim().isNotEmpty ||
+      _settings.providerType == 'custom';
 
   // ------------------------------------------------------------------ //
   // Narrative generation (streamed)
   // ------------------------------------------------------------------ //
   Stream<String> generateNarrative(PromptBundle bundle) async* {
-    if (_isOpenRouter) {
-      yield* _generateNarrativeOpenRouter(bundle);
+    if (_useOpenAiFormat) {
+      yield* _generateNarrativeOpenAi(bundle);
     } else {
       yield* _generateNarrativeGemini(bundle);
     }
@@ -111,13 +151,13 @@ class GeminiService {
     }
   }
 
-  Stream<String> _generateNarrativeOpenRouter(PromptBundle bundle) async* {
+  Stream<String> _generateNarrativeOpenAi(PromptBundle bundle) async* {
     final messages = [
       {'role': 'system', 'content': bundle.system},
       {'role': 'user', 'content': bundle.userMessage()},
     ];
     final body = jsonEncode({
-      'model': openRouterModelId(_modelName),
+      'model': _effectiveModelId,
       'messages': messages,
       'temperature': _settings.temperature,
       'max_tokens': _settings.maxOutputTokens,
@@ -129,16 +169,13 @@ class GeminiService {
     while (true) {
       attempt++;
       try {
-        final request = http.Request('POST', Uri.parse('$_openRouterBaseUrl/chat/completions'));
-        request.headers['Authorization'] = 'Bearer ${_settings.apiKey.trim()}';
-        request.headers['Content-Type'] = 'application/json';
-        request.headers['HTTP-Referer'] = 'https://storyloom.app';
-        request.headers['X-Title'] = 'Storyloom';
+        final request = http.Request('POST', Uri.parse(_chatCompletionsUrl));
+        request.headers.addAll(_openaiHeaders);
         request.body = body;
 
         final response = await http.Client().send(request).timeout(
           const Duration(seconds: 120),
-          onTimeout: () => throw TimeoutException('OpenRouter request timed out'),
+          onTimeout: () => throw TimeoutException('AI request timed out'),
         );
 
         if (response.statusCode != 200) {
@@ -147,9 +184,9 @@ class GeminiService {
           try {
             final errorJson = jsonDecode(errorBody) as Map<String, dynamic>;
             final error = errorJson['error'] as Map<String, dynamic>?;
-            msg = error?['message'] as String? ?? 'OpenRouter error ${response.statusCode}';
+            msg = error?['message'] as String? ?? 'AI error ${response.statusCode}';
           } catch (_) {
-            msg = 'OpenRouter error ${response.statusCode}: $errorBody';
+            msg = 'AI error ${response.statusCode}: $errorBody';
           }
           final isQuota = response.statusCode == 429;
           throw AiException(msg, retryable: isQuota);
@@ -176,7 +213,7 @@ class GeminiService {
         }
 
         if (!yieldedAny) {
-          throw const AiException('OpenRouter returned empty output.', retryable: false);
+          throw const AiException('AI returned empty output.', retryable: false);
         }
         return; // Success, exit retry loop
       } on AiException catch (e) {
@@ -191,19 +228,19 @@ class GeminiService {
         delay *= 2;
       } on TimeoutException catch (_) {
         if (attempt >= _maxAttempts) {
-          throw const AiException('OpenRouter request timed out.', retryable: true);
+          throw const AiException('AI request timed out.', retryable: true);
         }
         await Future.delayed(Duration(milliseconds: (delay * 1000).round()));
         delay *= 2;
       } on http.ClientException catch (_) {
         if (attempt >= _maxAttempts) {
-          throw const AiException('Network error reaching OpenRouter.', retryable: true);
+          throw const AiException('Network error reaching AI.', retryable: true);
         }
         await Future.delayed(Duration(milliseconds: (delay * 1000).round()));
         delay *= 2;
       } catch (e) {
         if (attempt >= _maxAttempts) {
-          throw AiException('OpenRouter error: $e', retryable: false);
+          throw AiException('AI error: $e', retryable: false);
         }
         await Future.delayed(Duration(milliseconds: (delay * 1000).round()));
         delay *= 2;
@@ -223,8 +260,8 @@ class GeminiService {
   // Structured analysis
   // ------------------------------------------------------------------ //
   Future<TurnAnalysis> analyzeTurn(String scene, String narrative) async {
-    if (_isOpenRouter) {
-      return _analyzeTurnOpenRouter(scene, narrative);
+    if (_useOpenAiFormat) {
+      return _analyzeTurnOpenAi(scene, narrative);
     }
     final model = _model(
       config: GenerationConfig(
@@ -257,9 +294,9 @@ class GeminiService {
     }
   }
 
-  Future<TurnAnalysis> _analyzeTurnOpenRouter(String scene, String narrative) async {
+  Future<TurnAnalysis> _analyzeTurnOpenAi(String scene, String narrative) async {
     final prompt = analysisUserMessage(scene, narrative);
-    final responseText = await _openRouterComplete(
+    final responseText = await _openAiComplete(
       'You are a story analysis engine. Extract world state changes from the narrative. '
       'Respond ONLY with valid JSON matching the required schema. No markdown, no explanation.',
       prompt,
@@ -288,8 +325,8 @@ class GeminiService {
   // Summarization / opening / health
   // ------------------------------------------------------------------ //
   Future<String> summarizeStory(String oldSummary, String recentText) async {
-    if (_isOpenRouter) {
-      return _openRouterComplete(
+    if (_useOpenAiFormat) {
+      return _openAiComplete(
         'You are a story summarizer. Condense the story events into a concise summary.',
         summarizeUserMessage(oldSummary, recentText),
         temperature: 0.5,
@@ -315,8 +352,8 @@ class GeminiService {
   }
 
   Future<String> generateOpening(String userMessage) async {
-    if (_isOpenRouter) {
-      return _openRouterComplete(
+    if (_useOpenAiFormat) {
+      return _openAiComplete(
         'You are Storyloom\'s narrator: an immersive, masterful interactive-fiction engine. '
         'Write the opening scene for this story.',
         userMessage,
@@ -342,8 +379,8 @@ class GeminiService {
   }
 
   Future<String> testConnection() async {
-    if (_isOpenRouter) {
-      final result = await _openRouterComplete(
+    if (_useOpenAiFormat) {
+      final result = await _openAiComplete(
         'Reply with just: OK',
         'Reply with just: OK',
         maxTokens: 32,
@@ -364,7 +401,7 @@ class GeminiService {
   // ------------------------------------------------------------------ //
   // OpenRouter non-streaming helper
   // ------------------------------------------------------------------ //
-  Future<String> _openRouterComplete(
+  Future<String> _openAiComplete(
     String systemPrompt,
     String userPrompt, {
     double temperature = 0.7,
@@ -375,7 +412,7 @@ class GeminiService {
       {'role': 'user', 'content': userPrompt},
     ];
     final body = jsonEncode({
-      'model': openRouterModelId(_modelName),
+      'model': _effectiveModelId,
       'messages': messages,
       'temperature': temperature,
       'max_tokens': maxTokens,
@@ -383,13 +420,8 @@ class GeminiService {
 
     return _withRetry(() async {
       final response = await http.post(
-        Uri.parse('$_openRouterBaseUrl/chat/completions'),
-        headers: {
-          'Authorization': 'Bearer ${_settings.apiKey.trim()}',
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://storyloom.app',
-          'X-Title': 'Storyloom',
-        },
+        Uri.parse(_chatCompletionsUrl),
+        headers: _openaiHeaders,
         body: body,
       ).timeout(const Duration(seconds: 60));
 
@@ -398,9 +430,9 @@ class GeminiService {
         try {
           final errorJson = jsonDecode(response.body) as Map<String, dynamic>;
           final error = errorJson['error'] as Map<String, dynamic>?;
-          msg = error?['message'] as String? ?? 'OpenRouter error ${response.statusCode}';
+          msg = error?['message'] as String? ?? 'AI error ${response.statusCode}';
         } catch (_) {
-          msg = 'OpenRouter error ${response.statusCode}';
+          msg = 'AI error ${response.statusCode}';
         }
         throw AiException(msg, retryable: response.statusCode == 429);
       }
@@ -408,11 +440,11 @@ class GeminiService {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final choices = json['choices'] as List?;
       if (choices == null || choices.isEmpty) {
-        throw const AiException('OpenRouter returned empty output.', retryable: false);
+        throw const AiException('AI returned empty output.', retryable: false);
       }
       final content = (choices[0] as Map<String, dynamic>)['message'] as Map<String, dynamic>?;
       return (content?['content'] as String?)?.trim() ?? '';
-    }, 'OpenRouter');
+    }, 'AI');
   }
 
   // ------------------------------------------------------------------ //
@@ -452,7 +484,7 @@ class GeminiService {
         low.contains('per day') ||
         low.contains('per minute')) {
       return AiException(
-        'Gemini quota exceeded for this key. Try again later or check Google AI Studio.',
+        'API quota exceeded for this key. Try again later.',
         retryable: false,
       );
     }
@@ -464,7 +496,7 @@ class GeminiService {
     }
     if (low.contains('model') && (low.contains('not found') || low.contains('not available'))) {
       return AiException(
-          'The configured Gemini model is not available for this key.', retryable: false);
+          'The configured model is not available for this key.', retryable: false);
     }
     if (low.contains('timeout') || low.contains('timed out') || low.contains('sdk exception')) {
       return AiException(message, retryable: true);
@@ -472,7 +504,7 @@ class GeminiService {
     if (e is SocketException ||
         e is http.ClientException ||
         e is TimeoutException) {
-      return AiException('Network problem reaching Gemini. Retrying.', retryable: true);
+      return AiException('Network problem reaching AI. Retrying.', retryable: true);
     }
     final clipped = message.length > 240 ? message.substring(0, 240) : message;
     return AiException(clipped, retryable: false);

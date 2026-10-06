@@ -23,6 +23,7 @@ class Scenario {
     required this.playCount,
     this.author = 'Storyloom',
     this.coverArt,
+    this.forks = const [],
   });
 
   final int id;
@@ -47,10 +48,11 @@ class Scenario {
   final int playCount;
   final String author;
   final String? coverArt;
+  final List<Fork> forks;
 
   String get ratingLabel => contentRating == 'mature' ? 'Mature' : 'General';
 
-  Scenario copyWith({String? coverArt}) => Scenario(
+  Scenario copyWith({String? coverArt, List<Fork>? forks}) => Scenario(
         id: id,
         title: title,
         description: description,
@@ -73,6 +75,7 @@ class Scenario {
         playCount: playCount,
         author: author,
         coverArt: coverArt ?? this.coverArt,
+        forks: forks ?? this.forks,
       );
 
   Map<String, dynamic> toJson() => {
@@ -98,6 +101,7 @@ class Scenario {
         'play_count': playCount,
         'author': author,
         'cover_art': coverArt,
+        'forks': forks.map((f) => f.toJson()).toList(),
       };
 
   factory Scenario.fromJson(Map<String, dynamic> j) => Scenario(
@@ -123,6 +127,7 @@ class Scenario {
         playCount: (j['play_count'] as num?)?.toInt() ?? 0,
         author: (j['author'] as String?) ?? 'Storyloom',
         coverArt: (j['cover_art'] as String?) ?? '',
+        forks: _forks(j['forks']),
       );
 
   static List<String> _strList(dynamic v) =>
@@ -131,4 +136,79 @@ class Scenario {
   static List<Map<String, dynamic>> _mapList(dynamic v) => v is List
       ? v.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList()
       : const [];
+
+  static List<Fork> _forks(dynamic v) => v is List
+      ? v.whereType<Map>().map((e) => Fork.fromJson(
+              Map<String, dynamic>.from(e))).toList()
+      : const [];
+}
+
+/// A story fork — a branch point the player can enter when triggers fire.
+class Fork {
+  const Fork({
+    required this.id,
+    required this.label,
+    this.triggers = const [],
+    this.leadsTo,
+    this.openingScene,
+  });
+
+  final String id;
+  final String label;
+  final List<ForkTrigger> triggers;
+  final String? leadsTo; // branch to switch to; null = same branch, record choice
+  final String? openingScene; // branch-specific opening variant
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'triggers': triggers.map((t) => t.toJson()).toList(),
+        'leads_to': leadsTo,
+        'opening_scene': openingScene,
+      };
+
+  factory Fork.fromJson(Map<String, dynamic> j) => Fork(
+        id: (j['id'] as String?) ?? j['id'].toString(),
+        label: (j['label'] as String?) ?? '',
+        triggers: (j['triggers'] as List?)
+                ?.map((e) => ForkTrigger.fromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList() ??
+            const [],
+        leadsTo: j['leads_to'] as String?,
+        openingScene: j['opening_scene'] as String?,
+      );
+}
+
+/// A condition that must be true for a fork to become available.
+class ForkTrigger {
+  const ForkTrigger({
+    required this.type,
+    this.npc,
+    this.key,
+    this.op,
+    this.value,
+  });
+
+  final String type; // 'relationship' | 'fact' | 'flag' | 'turns' | 'tone'
+  final String? npc; // NPC name (for relationship)
+  final String? key; // fact/flag key
+  final String? op; // '<' | '>' | '==' | '>=' | '<=' | '!='
+  final dynamic value; // comparison value
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        if (npc != null && npc!.isNotEmpty) 'npc': npc,
+        if (key != null && key!.isNotEmpty) 'key': key,
+        if (op != null && op!.isNotEmpty) 'op': op,
+        if (value != null) 'value': value,
+      };
+
+  factory ForkTrigger.fromJson(Map<String, dynamic> j) => ForkTrigger(
+        type: (j['type'] as String?) ?? 'relationship',
+        npc: j['npc'] as String?,
+        key: j['key'] as String?,
+        op: j['op'] as String?,
+        value: j['value'],
+      );
 }

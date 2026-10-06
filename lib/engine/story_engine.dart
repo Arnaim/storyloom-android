@@ -53,6 +53,7 @@ class StoryEngine {
       scenarioId: scenario.id,
       character: character?.isBlank == true ? null : character,
       currentState: state,
+      coverArt: scenario.coverArt,
     );
     final id = await _db.createStory(story);
 
@@ -72,6 +73,7 @@ class StoryEngine {
       scenario,
       buildPlayer(scenario, story.character, story.currentState),
       npcContext: buildNpcs(npcs),
+      state: story.currentState,
     );
     final opening = (await gemini.generateOpening(prompt)).trim();
 
@@ -482,6 +484,7 @@ class StoryEngine {
       {String? actionText, bool isContinue = false, bool isAction = false}) async {
     final npcs = await _db.npcsForStory(story.id);
     final memories = await _db.memoriesForStory(story.id);
+    final npcMemories = await _db.npcMemoriesForStory(story.id);
     final recent = await _db.messagesForStory(story.id, limit: settings.contextMessages);
     return PromptBundle(
       system: buildSystemPrompt(scenario),
@@ -494,6 +497,7 @@ class StoryEngine {
       actionText: actionText,
       isContinue: isContinue,
       actionIsAction: isAction,
+      npcMemories: npcMemories,
     );
   }
 
@@ -633,6 +637,12 @@ class StoryEngine {
       notes.add((ev.kind, ev.text));
     }
 
+    // Evaluate forks — branch the story when triggers fire.
+    final forkMsg = await _checkForks(story, analysis);
+    if (forkMsg != null) {
+      notes.add(('event', forkMsg));
+    }
+
     final created = <StoryMessage>[];
     final seen = <String>{};
     var cap = 6;
@@ -664,7 +674,91 @@ class StoryEngine {
     }
 
     await mem.pinCandidates(story.id, story.lastMessageSeq, analysis.memoryCandidates);
+
+    // Relationship drift — unmentioned NPCs cool off over time.
+    await _applyRelationshipDrift(story, analysis);
+
+    // Per-NPC memory pinning — facts the model reports get pinned to
+    // the relevant NPC so they resurface in future prompts.
+    await _pinNpcMemories(story, analysis);
+
     return created;
+  }
+
+  /// Evaluates [scenario.forks] against the current world + NPC state.
+  /// When a fork's triggers all match and it leads to a different branch,
+  /// switches the story's branch and advances the act. Returns a system
+  /// message describing the shift, or null if no fork fired.
+  Future<String?> _checkForks(Story story, TurnAnalysis analysis) async {
+    final scenario = await _db.getScenario(story.scenarioId);
+    if (scenario == null || scenario.forks.isEmpty) return null;
+    final state = Map<String, dynamic>.from(story.currentState);
+    final currentBranch = (state['branching'] as Map?)?['branch'] as String? ?? '';
+    final npcs = await _db.npcsForStory(story.id);
+
+    for (final fork in scenario.forks) {
+      if (fork.triggers.isEmpty) continue;
+      final allMatch = fork.triggers.every((t) => _triggerMatches(t, state, npcs));
+      if (!allMatch) continue;
+      final newBranch = fork.leadsTo ?? fork.id;
+      if (newBranch == currentBranch) continue;
+      final newState = Map<String, dynamic>.from(state)
+        ..['branching'] = Map<String, dynamic>.from(state['branching'] ?? {})
+          ..['branch'] = newBranch
+          ..['act'] = ((state['branching'] as Map?)?['act'] as int? ?? 1) + 1;
+      await _db.updateStory(story.copyWith(currentState: newState));
+      return 'The story pivots toward the "$newBranch" path.';
+    }
+    return null;
+  }
+
+  bool _triggerMatches(
+      ForkTrigger t, Map<String, dynamic> state, List<StoryNPC> npcs) {
+    switch (t.type) {
+      case 'relationship':
+        final npc = t.npc != null ? _db.findNpc(npcs, t.npc!) : null;
+        if (npc == null) return false;
+        final v = npc.relationshipValue;
+        return _compare(v, t.op, t.value?.toDouble() ?? 0);
+      case 'fact':
+        final facts = state['facts'] as List? ?? <String>[];
+        final f = t.key ?? '';
+        if (t.op == '==' || t.op == null) {
+          return facts.any((e) => e.toLowerCase() == f.toLowerCase());
+        }
+        return false;
+      case 'flag':
+        final flags = state['flags'] as Map? ?? {};
+        final k = t.key ?? '';
+        final v = flags[k];
+        if (t.op == '==' || t.op == null) return v == t.value;
+        if (v is! num) return false;
+        return _compare(v.toDouble(), t.op, (t.value as num?)?.toDouble() ?? 0);
+      case 'turns':
+        final turns = state['_turns'] as int? ?? 0;
+        return _compare(turns.toDouble(), t.op, (t.value as num?)?.toDouble() ?? 0);
+      default:
+        return false;
+    }
+  }
+
+  bool _compare(double a, String? op, double b) {
+    switch (op) {
+      case '<':
+        return a < b;
+      case '>':
+        return a > b;
+      case '<=':
+        return a <= b;
+      case '>=':
+        return a >= b;
+      case '==':
+        return (a - b).abs() < 0.001;
+      case '!=':
+        return (a - b).abs() >= 0.001;
+      default:
+        return false;
+    }
   }
 
   StoryMessage _withSuggestions(StoryMessage msg, TurnAnalysis analysis) {
@@ -700,5 +794,73 @@ class StoryEngine {
     } catch (e) {
       debugPrint('Summary skipped for story ${story.id} this cycle: $e');
     }
+  }
+
+  /// Relationship drift — NPCs not mentioned in this turn's analysis
+  /// cool off slightly. Keeps cast from freezing at their initial values.
+  Future<void> _applyRelationshipDrift(
+      Story story, TurnAnalysis analysis) async {
+    final mentioned = analysis.npcUpdates.map((u) => u.name.toLowerCase()).toSet();
+    final npcs = await _db.npcsForStory(story.id);
+    for (final npc in npcs) {
+      if (mentioned.contains(npc.name.toLowerCase())) continue;
+      final newRel = (npc.relationshipValue - 0.5).clamp(-100.0, 100.0);
+      final newState = _emotionalStateFor(newRel);
+      await _db.upsertNpc(StoryNPC(
+        id: npc.id,
+        storyId: npc.storyId,
+        name: npc.name,
+        details: npc.details,
+        relationshipValue: newRel,
+        emotionalState: npc.emotionalState.isEmpty ? newState : npc.emotionalState,
+        status: npc.status,
+        location: npc.location,
+      ));
+    }
+  }
+
+  /// Pin analysis-reported facts to the relevant NPC so they resurface
+  /// in future `buildNpcs` calls.
+  Future<void> _pinNpcMemories(
+      Story story, TurnAnalysis analysis) async {
+    for (final u in analysis.npcUpdates) {
+      if (u.name.trim().isEmpty) continue;
+      if (u.relationshipDelta != 0) {
+        final direction =
+            u.relationshipDelta > 0 ? 'trust increased' : 'trust decreased';
+        await mem.pinNpcMemory(
+            story.id, u.name,
+            '$direction by ${u.relationshipDelta.round()}.', 0.6,
+            story.lastMessageSeq);
+      }
+      if (u.emotionalState != null && u.emotionalState!.isNotEmpty) {
+        await mem.pinNpcMemory(story.id, u.name,
+            'mood: ${u.emotionalState}', 0.5, story.lastMessageSeq);
+      }
+      if (u.location != null && u.location!.isNotEmpty) {
+        await mem.pinNpcMemory(story.id, u.name,
+            'location: ${u.location}', 0.4, story.lastMessageSeq);
+      }
+    }
+    for (final ev in analysis.events) {
+      if (ev.text.trim().isEmpty) continue;
+      // Pin event to any NPC named in the text.
+      for (final n in await _db.npcsForStory(story.id)) {
+        if (ev.text.toLowerCase().contains(n.name.toLowerCase())) {
+          await mem.pinNpcMemory(
+              story.id, n.name, '${ev.kind}: ${ev.text}', 0.5,
+              story.lastMessageSeq);
+        }
+      }
+    }
+  }
+
+  /// Map a relationship value to a default emotional state label.
+  static String _emotionalStateFor(double rel) {
+    if (rel >= 60) return 'devoted';
+    if (rel >= 25) return 'friendly';
+    if (rel > -25) return 'neutral';
+    if (rel > -60) return 'wary';
+    return 'hostile';
   }
 }

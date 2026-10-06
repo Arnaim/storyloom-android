@@ -44,6 +44,12 @@ class _CreateStoryPageState extends State<CreateStoryPage> {
   final _charBackstory = TextEditingController();
   String? _charImage;
 
+  // Player persona fields (1-on-1 "YOU" section)
+  final _yourName = TextEditingController();
+  final _yourAppearance = TextEditingController();
+  final _yourPersonality = TextEditingController();
+  String? _yourImage;
+
   // Full-story cast + player role
   final List<Map<String, dynamic>> _npcs = [];
   final _playerRole = TextEditingController();
@@ -58,6 +64,7 @@ class _CreateStoryPageState extends State<CreateStoryPage> {
       _title, _description, _world, _rules, _tone, _opening,
       _charName, _charAppearance, _charPersonality, _charSpeech,
       _charBackstory, _playerRole,
+      _yourName, _yourAppearance, _yourPersonality,
     ]) {
       c.dispose();
     }
@@ -348,8 +355,75 @@ class _CreateStoryPageState extends State<CreateStoryPage> {
 
           if (_oneOnOne) ...[
             const SizedBox(height: 20),
-            _SectionLabel('YOUR CHARACTER'),
+            _SectionLabel('YOU'),
             const SizedBox(height: 8),
+            Text(
+              'Tell us about yourself — the person walking into this story.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    final img = await _pickImage();
+                    if (img != null) setState(() => _yourImage = img);
+                  },
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: scheme.surfaceContainerHighest,
+                      border: Border.all(
+                          color: scheme.outlineVariant.withValues(alpha: 0.6)),
+                    ),
+                    child: _yourImage != null
+                        ? Image.file(File(_yourImage!), fit: BoxFit.cover)
+                        : Icon(Icons.person_add_alt_1,
+                            color: scheme.onSurfaceVariant),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _yourName,
+                    decoration: const InputDecoration(
+                        labelText: 'Your name',
+                        hintText: 'Alex'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _yourAppearance,
+              minLines: 2,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                  labelText: 'Your appearance (optional)',
+                  hintText: 'Tall, silver-streaked hair, tired kind eyes…'),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _yourPersonality,
+              minLines: 2,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                  labelText: 'Your personality (optional)',
+                  hintText: 'Dry humor, guarded, softens with patience…'),
+            ),
+            const SizedBox(height: 20),
+            _SectionLabel('WHO YOU\'LL MEET'),
+            const SizedBox(height: 8),
+            Text(
+              'The other person in this story.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -807,11 +881,11 @@ class _PlayerCharacterSheetState extends State<_PlayerCharacterSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Your character',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w800)),
+Text('About you',
+                 style: Theme.of(context)
+                     .textTheme
+                     .titleLarge
+                     ?.copyWith(fontWeight: FontWeight.w800)),
             if (widget.hint.trim().isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(widget.hint,

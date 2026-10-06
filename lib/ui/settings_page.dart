@@ -163,25 +163,23 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: DropdownButtonFormField<String>(
-                  initialValue: supportedModels.contains(_draft.model)
-                      ? _draft.model
-                      : supportedModels.first,
-                  decoration: const InputDecoration(labelText: 'AI model'),
-                  items: supportedModels
-                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                      .toList(),
-                  onChanged: (v) {
-                    if (v != null) _set((s) => s.model = v);
-                  },
+                child: TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Model ID',
+                    hintText:
+                        'e.g. gemini-3.5-flash, openrouter/gemma-4-31b-it:free, llama3.2:latest',
+                  ),
+                  onChanged: (v) => _set((s) => s.model = v.trim()),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 child: Text(
-                  isOpenRouterModel(_draft.model)
-                      ? 'Using OpenRouter — get a free key at openrouter.ai/keys'
-                      : 'Using Google Gemini — get a key at aistudio.google.com/app/apikey',
+                  _draft.providerType == 'gemini'
+                      ? 'Using Google Gemini — get a key at aistudio.google.com/app/apikey'
+                      : _draft.providerType == 'openrouter'
+                          ? 'Using OpenRouter — get a free key at openrouter.ai/keys'
+                          : 'Using Custom API — configure base URL above',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -361,17 +359,20 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showKeyDialog() {
     final key = TextEditingController(text: _keyController.text);
     var hidden = true;
-    final isOpenRouter = isOpenRouterModel(_draft.model);
     showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isOpenRouter ? 'OpenRouter API key' : 'API key'),
+          title: Text(_draft.providerType == 'gemini'
+              ? 'Google Gemini API key'
+              : _draft.providerType == 'openrouter'
+                  ? 'OpenRouter API key'
+                  : 'Custom API key'),
           content: TextField(
             controller: key,
             obscureText: hidden,
             decoration: InputDecoration(
-              hintText: isOpenRouter ? 'sk-or-...' : 'Paste your API key here',
+              hintText: _draft.providerType == 'gemini' ? 'Paste your Gemini API key here' : _draft.providerType == 'openrouter' ? 'sk-or-...' : 'Paste your API key here',
               suffixIcon: IconButton(
                 icon: Icon(hidden ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => hidden = !hidden),

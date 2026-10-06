@@ -147,34 +147,122 @@ class _LibraryTab extends StatelessWidget {
   }
 }
 
-class _DiscoverTab extends StatelessWidget {
+class _DiscoverTab extends StatefulWidget {
   const _DiscoverTab({required this.scenarios});
 
   final List<Scenario> scenarios;
 
   @override
+  State<_DiscoverTab> createState() => _DiscoverTabState();
+}
+
+class _DiscoverTabState extends State<_DiscoverTab> {
+  String _selectedGenre = '';
+
+  /// Derive the set of genres actually present in the seed pack so the
+  /// filter chips always match what's available.
+  List<String> get _genres {
+    final set = <String>{};
+    for (final s in widget.scenarios) {
+      final g = s.genre.trim();
+      if (g.isNotEmpty) set.add(g);
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
+
+  List<Scenario> get _filtered {
+    if (_selectedGenre.isEmpty) return widget.scenarios;
+    return widget.scenarios
+        .where((s) => s.genre.trim() == _selectedGenre)
+        .toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 340,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.78,
-      ),
-      itemCount: scenarios.length,
-      itemBuilder: (context, i) {
-        final sc = scenarios[i];
-        return ScenarioCard(
-          scenario: sc,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ScenarioPage(scenario: sc)),
-            );
-          },
-        );
-      },
+    final scheme = Theme.of(context).colorScheme;
+    final genres = _genres;
+    return Column(
+      children: [
+        // Genre filter bar
+        Container(
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: genres.length + 1, // +1 for "All"
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final all = i == 0;
+              final genre = all ? null : genres[i - 1];
+              final selected = all
+                  ? _selectedGenre.isEmpty
+                  : _selectedGenre == (genre ?? "");
+              final label = all ? "All" : genre!;
+              return FilterChip(
+                selected: selected,
+                label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                onSelected: (_) => setState(() {
+                  _selectedGenre = all ? '' : genre!;
+                }),
+                showCheckmark: false,
+                side: BorderSide(
+                  color: selected
+                      ? scheme.primary
+                      : scheme.outlineVariant.withValues(alpha: 0.4),
+                  width: selected ? 1.4 : 1,
+                ),
+                selectedColor: scheme.primaryContainer,
+                labelStyle: TextStyle(
+                  color: selected
+                      ? scheme.onPrimaryContainer
+                      : scheme.onSurfaceVariant,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 12,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                shape: const StadiumBorder(),
+              );
+            },
+          ),
+        ),
+        const Divider(height: 1),
+        // Scenario grid
+        Expanded(
+          child: _filtered.isEmpty
+              ? Center(
+                  child: Text('No stories match "$_selectedGenre"',
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(12),
+                  children: [
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        for (final sc in _filtered)
+                          SizedBox(
+                            width: 340,
+                            child: ScenarioCard(
+                              scenario: sc,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          ScenarioPage(scenario: sc)),
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 }

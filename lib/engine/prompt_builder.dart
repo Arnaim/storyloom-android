@@ -145,6 +145,12 @@ String buildPlayer(Scenario s, Character? c, Map<String, dynamic> state) {
 String buildStateSection(Map<String, dynamic> state) {
   final world = state['world'] as Map<String, dynamic>? ?? {};
   final flags = state['flags'] as Map<String, dynamic>? ?? {};
+  final branching = state['branching'] as Map<String, dynamic>? ?? {};
+  final branch = (branching['branch'] as String?) ?? '';
+  final act = branching['act'] as num? ?? 1;
+  final tone = (branching['tone'] as String?) ?? 'neutral';
+  final facts = state['facts'] as List? ?? [];
+  final recentFacts = facts.length > 8 ? facts.sublist(facts.length - 8) : facts;
   final lines = <String>[
     '### CURRENT WORLD STATE',
     "Location: ${world['current_location'] ?? 'unknown'}",
@@ -153,8 +159,9 @@ String buildStateSection(Map<String, dynamic> state) {
   if (time.isNotEmpty) lines.add('Time: $time');
   final weather = world['weather'] as String? ?? '';
   if (weather.isNotEmpty) lines.add('Weather: $weather');
-  final facts = state['facts'] as List? ?? [];
-  final recentFacts = facts.length > 8 ? facts.sublist(facts.length - 8) : facts;
+  if (branch.isNotEmpty) lines.add('BRANCH: $branch');
+  lines.add('Act: $act');
+  lines.add('Tone/mood: $tone');
   if (recentFacts.isNotEmpty) {
     lines.add('Established facts: ${recentFacts.join(' | ')}');
   }
@@ -165,7 +172,8 @@ String buildStateSection(Map<String, dynamic> state) {
   return lines.join('\n');
 }
 
-String buildNpcs(List<StoryNPC> npcs, {int limit = 8}) {
+String buildNpcs(List<StoryNPC> npcs,
+    {List<NPCMemory> npcMemories = const [], int limit = 14}) {
   if (npcs.isEmpty) return '';
   final cards = <String>[];
   for (final n in npcs.take(limit)) {
@@ -216,9 +224,22 @@ String buildNpcs(List<StoryNPC> npcs, {int limit = 8}) {
       bits.add('- Location: ${n.location}');
     }
     bits.add('- Relationship toward player: ${n.relationshipLabel} (${n.relationshipValue >= 0 ? '+' : ''}${n.relationshipValue.round()})');
+
+    // Per-NPC memories — what this character remembers about the player.
+    final memories = npcMemories
+        .where((m) => m.npcName.toLowerCase() == n.name.toLowerCase())
+        .toList();
+    for (final m in memories.take(3)) {
+      bits.add('- ${n.name} remembers: ${m.fact}');
+    }
+
     cards.add(bits.join('\n'));
   }
-  return '### NPCs (simulate faithfully)\n\n${cards.join('\n\n')}';
+  final rest = npcs.length > limit ? npcs.length - limit : 0;
+  final header = rest > 0
+      ? '### NPCs (simulate faithfully)\n\n${cards.join('\n\n')}\n\n### BACKGROUND ($rest more not shown)'
+      : '### NPCs (simulate faithfully)\n\n${cards.join('\n\n')}';
+  return header;
 }
 
 String buildMemories(List<Memory> memories) {
@@ -286,6 +307,7 @@ class PromptBundle {
     this.actionText,
     this.isContinue = false,
     this.actionIsAction = false,
+    this.npcMemories = const [],
   });
 
   final String system;
@@ -298,13 +320,14 @@ class PromptBundle {
   final String? actionText;
   final bool isContinue;
   final bool actionIsAction;
+  final List<NPCMemory> npcMemories;
 
   String userMessage() {
     final parts = <String>[
       buildWorld(scenario),
       buildPlayer(scenario, character, state),
       buildStateSection(state),
-      buildNpcs(npcs),
+      buildNpcs(npcs, npcMemories: npcMemories),
       buildMemories(memories),
       buildScene(recent),
       buildAction(actionText, isContinue: isContinue, isAction: actionIsAction),
@@ -340,19 +363,31 @@ $recentText
 
 Produce an updated summary (max 250 words): present tense, covering who the player is, key relationships and promises, unresolved conflicts, current goal. Drop resolved minutiae. Output the summary text only.''';
 
-String openingUserMessage(Scenario s, String characterContext, {String? npcContext}) {
+String openingUserMessage(Scenario s, String characterContext,
+    {String? npcContext, Map<String, dynamic>? state}) {
   final castBlock = (npcContext != null && npcContext.trim().isNotEmpty)
       ? npcContext
       : _npcSectionFromScenario(s);
+  final branching = state != null ? (state['branching'] as Map?) : null;
+  final branch = (branching?['branch'] as String?) ?? '';
+  // Pick branch-specific opening if available; otherwise use the scenario's.
+  String openingScene = s.openingScene;
+  if (branch.isNotEmpty) {
+    for (final f in s.forks) {
+      if (f.id == branch && f.openingScene != null && f.openingScene!.isNotEmpty) {
+        openingScene = f.openingScene!;
+        break;
+      }
+    }
+  }
   final parts = <String>[
     '### WORLD\n${s.worldDescription.isEmpty ? s.description : s.worldDescription}',
     if (s.premise.trim().isNotEmpty) '### PREMISE\n${s.premise}',
     characterContext,
     ?castBlock,
-    if (s.openingScene.trim().isNotEmpty)
-      '### REQUIRED OPENING DIRECTION\nBegin the story here: ${s.openingScene}',
-    '### INSTRUCTION\n'
-        'Write the opening scene. Establish place, mood and situation, then hand '
+    if (openingScene.trim().isNotEmpty)
+      '### REQUIRED OPENING DIRECTION\nBegin the story here: $openingScene',
+    '### INSTRUCTION\nWrite the opening scene. Establish place, mood and situation, then hand '
         'focus to the player at a natural decision point (no closing questions). '
         'If the REQUIRED OPENING DIRECTION names or involves specific characters, they '
         'MUST be the ones who appear, described exactly as their profiles above say - '

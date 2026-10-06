@@ -3,6 +3,7 @@ import '../models/story.dart';
 
 /// Port of the backend's `memory_service.py`, backed by [AppDatabase].
 const int maxPinned = 15;
+const int maxNpcMemoriesPerNpc = 6;
 
 Future<List<Memory>> loadMemories(int storyId) =>
     AppDatabase.instance.memoriesForStory(storyId);
@@ -14,7 +15,7 @@ String currentSummary(List<Memory> memories) {
   return '';
 }
 
-/// Trim/normalize whitespace the way the backend's summary routine expects.
+/// Trim/whitespace the way the backend's summary routine expects.
 String transcriptForSummary(List<StoryMessage> rows) {
   final lines = <String>[];
   for (final m in rows) {
@@ -81,4 +82,63 @@ Future<void> saveSummary(int storyId, int currentSeq, String text) async {
     importance: 1.0,
     createdSeq: currentSeq,
   ));
+}
+
+// ------------------------------------------------------------------- //
+// Per-NPC memory — keeps individual cast members alive
+// ------------------------------------------------------------------- //
+
+/// Pin a fact to a specific NPC. Bounds to [maxNpcMemoriesPerNpc] per NPC
+/// (most important survive).
+Future<void> pinNpcMemory(
+    int storyId, String npcName, String fact, double importance, int currentSeq) async {
+  if (fact.trim().isEmpty) return;
+  final db = AppDatabase.instance;
+  final existing = await db.npcMemoriesForStory(storyId);
+  final npcFacts = existing.where((m) => m.npcName.toLowerCase() == npcName.toLowerCase()).toList();
+
+  // Deduplicate
+  final low = fact.trim().toLowerCase();
+  for (final ex in npcFacts) {
+    if (ex.fact.toLowerCase() == low) return;
+  }
+
+  await db.insertNpcMemory(NPCMemory(
+    storyId: storyId,
+    npcName: npcName,
+    fact: fact.trim(),
+    importance: importance,
+    createdSeq: currentSeq,
+  ));
+
+  // Bound
+  final updated = await db.npcMemoriesForStory(storyId);
+  final npcUpdated = updated.where((m) => m.npcName.toLowerCase() == npcName.toLowerCase()).toList()
+    ..sort((a, b) {
+      final cmp = b.importance.compareTo(a.importance);
+      return cmp != 0 ? cmp : b.id.compareTo(a.id);
+    });
+  for (final stale in npcUpdated.sublist(
+      npcUpdated.length > maxNpcMemoriesPerNpc ? maxNpcMemoriesPerNpc : npcUpdated.length)) {
+    await db.setNpcMemoryActive(stale.id, false);
+  }
+}
+
+/// Active per-NPC memories for [npcName], most important first.
+Future<List<NPCMemory>> npcMemoriesForName(int storyId, String npcName) async {
+  final all = await AppDatabase.instance.npcMemoriesForStory(storyId);
+  return all
+      .where((m) => m.npcName.toLowerCase() == npcName.toLowerCase() && m.active)
+      .toList();
+}
+
+/// Deactivate NPC memories older than [cutoffSeq].
+Future<void> decayNpcMemories(int storyId, int cutoffSeq) async {
+  final db = AppDatabase.instance;
+  final all = await db.npcMemoriesForStory(storyId);
+  for (final m in all) {
+    if (m.createdSeq < cutoffSeq) {
+      await db.setNpcMemoryActive(m.id, false);
+    }
+  }
 }

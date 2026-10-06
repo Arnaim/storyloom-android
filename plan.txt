@@ -1,0 +1,138 @@
+I've now read every file. I have a clear picture of the root causes. Here's the diagnosis and the plan.
+Root-cause diagnosis (verified in code)
+
+1. Stories are linear — the engine has no branching machinery.
+- seed_scenarios.dart gives each scenario a single fixed opening_scene string. prompt_builder.dart:352-360 tells the model "Begin the story here" and "Only characters from the cast section may appear". That's a script, not a branching system.
+- opening_suggestions (10 chips per scenario) are never consumed by the engine — prompt_builder.dart:253 buildAction() only handles isContinue / player text / fallback. Suggested actions are UI-only.
+- There's no plot-state tracking. world_state.dart tracks location/time/weather/facts/flags — but nothing like act, chapter, quest_branch, or story_state. So the model has no signal about where it is in an arc, and nothing compels divergence.
+- prompt_builder.dart:24 rule #4 says "structured state > pinned memories > recent scene > world rules > scenario text" — but when state is empty (which it is for most of a new story), the scenario text wins by default, pulling the narrative back onto the rails.
+
+2. Only 10 scenarios, and 9 of 10 have no cover art.
+- assets/covers/ contains only scenario1.jpg. Scenarios 2–10 reference assets/covers/scenario2.jpg … scenario10.jpg in their cover_art field, but those files do not exist → Image.asset errors → falls back to GenreBanner (a gradient). So 90% of the Discover grid is generic colored boxes.
+- The library StoryTile (widgets.dart:272) shows a CircleAvatar with the first letter of the title — it never renders the story's cover, so custom-created stories' images never appear in the library either. That's your "image doesn't show" bug.
+
+3. Characters fade into the background — three concrete leaks.
+- prompt_builder.dart:168 buildNpcs({int limit = 8}) — caps the cast at 8. Arcanum Academy has 16 NPCs; the Isekai scenario has 21. Half the cast is never even sent to the model.
+- story_engine.dart:527 applyAnalysisToWorld only updates NPCs the model explicitly reports in npc_updates. If the model doesn't name an NPC for 5 turns, that NPC's emotionalState/location/relationship all freeze. There's no background-simulation step — NPCs never interact with each other off-screen, so there's no "NPC economy" to draw from.
+- memory.dart pins max 15 facts and summarizes every ~16 turns. NPC relationship arcs are not memories — they're mutable columns. Nothing re-prompts the model about a cooling relationship, so drift is invisible until it's a total freeze.
+
+4. "Create your character first" confusion (verified).
+- create_story_page.dart:351 labels the 1-on-1 NPC section as "YOUR CHARACTER" (Mira the cafe owner). Then _createAndStart at line 148 pops _PlayerCharacterSheet titled "Your character". Two different things both called "your character." The user thinks the NPC is their avatar.
+
+5. Genre gap. 10 scenarios, all fantasy/isekai/sci-fi/political. No horror, no zombie/post-apoc, no noir, no romance-only, no historical, no slice-of-life cozy.
+The Plan: making Storyloom competitive with ISEKAI ZERO / OOC / AI Dungeon
+Vision (target shape)
+Dimension	ISEKAI ZERO / OOC
+Scenario library	30–60 curated, each with branching arcs
+Cast fidelity	Every named char has persistent memory, reacts consistently
+Branching	Real forks with consequences
+Custom stories	Rich templates + image gen
+Player agency	Say/Do + tone shifts honored
+Memory	Long-term character memory
+
+Phase 0 — Quick wins (this week, ~1–2 days, no new deps)
+These fix the reported bugs and raise perceived polish immediately.
+
+1. Fix the cover pipeline (biggest visual win).
+- Generate/curate real cover art for all 10 seed scenarios and bundle them in assets/covers/.
+- widgets.dart:272 StoryTile — render the story's cover in the library tile (fall back to GenreBanner), not a letter avatar. This fixes "my created story image doesn't show."
+- Add an errorBuilder fallback path that's already there — just needs the files to exist.
+
+2. Fix the "your character" label collision.
+- create_story_page.dart:351 → rename section "YOUR CHARACTER" → "YOUR COMPANION" and hint text accordingly.
+- _PlayerCharacterSheet title "Your character" → "About you" / "Your avatar".
+- In 1-on-1 mode, surface which is which with a visual split (left = you, right = them).
+
+3. Un-cap the cast. Change buildNpcs({int limit = 8}) → limit = 14, and add a "rest" summary line so the model knows there are more.
+
+4. Add a tone/divergence signal to the prompt. Add to storytellingRules a rule: "If the player's recent actions or words clearly shift the mood (hopeful → grim, playful → grim, etc.), reflect that in tone and let it change where the story goes — you are not on a fixed track." Cheap, high-impact.
+Phase 1 — Branching engine (the core, ~1 week)
+This is the single change that makes the app feel like ISEKAI ZERO.
+
+5. Add story_state to the world model (world_state.dart). New top-level keys:
+- act (int): current story act
+- branch (String?): active branch id
+- arc_progress (0..1): where we are in the current arc
+- pending_forks: list of unresolved fork points the player could still take
+- tone (String): current mood — grim / cozy / tense / lighthearted
+
+6. Fork definitions on scenarios. Add a forks list to Scenario:
+forks: [
+  { id: 'ally', trigger: 'gain X trust', leads_to: 'act2_allied' },
+  { id: 'rival', trigger: 'betray / lose trust', leads_to: 'act2_hostile' },
+]
+Plus per-fork opening_scene variants. The opening prompt then becomes "Begin in branch X" instead of one fixed script.
+
+7. Divergence scoring. After each turn, the analysis step (analysis.dart) gains a branch_delta field. applyAnalysisToWorld updates branch when a fork triggers. The prompt then includes CURRENT BRANCH: X so the model self-consistently stays on the rails it chose.
+
+8. "What if" replays. A new UI affordance in the player: long-press a message → "What if I'd done X?" → clones the story state, runs a 1–2 turn simulation, shows a preview, lets you commit or discard. Reuses rewindTo machinery.
+Phase 2 — Cast persistence (the "characters fade" fix, ~4 days)
+
+9. Per-NPC memory table. Add npc_memories (npc_id, fact, importance, created_seq) — separate from global memories. buildNpcs injects each NPC's last 3–4 personal memories into their card so the model knows what they remember about the player.
+
+10. Background simulation step. New engine method simulateOffScreen(npcs, state) called once per turn before the prompt is built. It's a cheap LLM call (small model / low tokens) that answers: "While the player wasn't looking, what did NPCs A, B, C do? Update their moods/locations/relationships." This creates the NPC economy so characters don't freeze. Feed the result into buildNpcs as Current status: lines.
+
+11. Relationship drift. In applyAnalysisToWorld, when an NPC isn't mentioned in npc_updates for N turns, decay their relationshipValue by 1–2 and set emotionalState to a default. Make drift visible in the Companions sheet so the player sees it cooling.
+
+12. Un-cap NPC injection fully — drop the take(limit) and instead summarize overflow into a "Also present (background): ..." line.
+Phase 3 — Genre & library expansion (ongoing, ~2 days per scenario)
+
+13. Bulk out to 40+ scenarios. Each scenario is a self-contained JSON blob in seed_scenarios.dart (proven format). Target list — all with male-lead default where you asked:
+#	Scenario
+1	Zombie Apocalypse: Last Light
+2	The Last Outpost
+3	Neon Noir: Ghost in the Wire
+4	The Crimson War: Vampire Prince
+5	The Forsaken: Plague Doctor
+6	Ironclad: Dieselpunk Mechanic
+7	The Crimson Court: Romance
+8	The Silent Sea: Space Captain
+9	The Wastes: Post-Apocalyptic Raider
+10	The Abbey: Occult Detective
+11	The Long Road: Western Marshal
+12	The Ice Gate: Arctic Researcher
+13	The Red Market: Spy
+14	The Garden: Cult Survivor
+15	The Steel Coast: Pirate Captain
+16	The Hollow Market: Demon Broker
+17	The Quiet Floor: Hospital Resident
+18	The Last Train: Zombie conductor
+19	The Ashen Kingdom: Dark Lord
+20	The Glass City: Time Detective
+(Expand the existing 10 fantasy ones with sequels/spin-offs too — e.g. "Arcanum Academy: Year 2", "Eldoria: After the Summoning".)
+
+14. Scenario packs as downloadable content. Ship the 10 built-ins in-app; allow assets/scenarios/*.json to be dropped in via a "Import scenario" flow (file picker → insertScenario). Lets the community grow the library without app updates.
+
+15. Cover art for every scenario. Either bundle real art or generate it at first launch via the existing CoverArtService (needs Gemini key). At minimum, give each genre a distinct GenreBanner palette + icon so the grid isn't 10 identical gradients.
+
+Phase 4 — Custom-story UX overhaul (~3 days)
+
+16. Template-driven creator. Replace free-form fields with 8 genre templates (Zombie, Isekai, Noir, Romance, Mystery, Fantasy Quest, Sci-Fi, Cozy). Each template pre-fills world/rules/tone/narrator_style and a starter cast. User just picks: title, genre, tone slider, cast size, mature toggle. Dramatically lowers the friction that causes the "create your character first" confusion.
+
+17. Cover in the library. (Phase 0 #1) — verify StoryTile renders story.coverArt.
+
+18. "Create your character" rework. Split into two clear steps in the flow:
+- Step 1: "Who are you?" (player avatar: name, appearance, personality) — labeled unambiguously.
+- Step 2: "Who do you meet?" (the NPC/cast) — labeled as the other characters.
+In 1-on-1 mode, surface both side by side with "YOU" / "THEM" headers.
+
+19. AI-generated cast art. Extend CoverArtService to generate NPC portraits (saved to docs, referenced by npc image). The _CompanionsTab already has a CircleAvatar slot — wire it to npc.image.
+Phase 5 — Polish & retention (ongoing)
+
+20. Onboarding: first-launch flow — (1) API key or skip-with-demo, (2) pick a genre, (3) name your character, (4) begin. Current app has none.
+
+21. Age gate UI for mature scenarios (currently prompt-level only).
+
+22. Continue/Regenerate affordances are solid — keep.
+
+23. Performance: the per-turn analysis call + optional summarize call = 2 LLM calls per turn. For free-tier Gemini this is slow. Consider making analysis optional by default or batching.
+Priority order (what to do first)
+#	Item	Impact
+1	Cover art for all 10 + StoryTile cover render	High visual
+2	"Your character" label fix	Fixes confusion
+3	Branching engine (Phase 1)	The core
+4	Cast un-cap + background sim (Phase 2)	Fixes "chars fade"
+5	Genre expansion (Phase 3)	Content
+6	Template creator (Phase 4)	UX
+7	Onboarding + age gate	Retention
+My recommendation: start with #1 + #2 (a day, immediate user-visible fixes), then commit to #3 (branching) as the make-or-break feature, because without it the genre expansion is just more linear stories. #4 is what makes the cast feel alive and is the difference between "another AI Dungeon clone" and "a world that remembers."

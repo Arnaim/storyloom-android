@@ -23,8 +23,8 @@ class AppDatabase {
     final path = p.join(dir, 'storyloom.db');
     return openDatabase(
       path,
-      version: 3,
-      onCreate: (db, version) async {
+       version: 5,
+       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE scenarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,6 +61,7 @@ class AppDatabase {
             turn_count INTEGER DEFAULT 0,
             last_message_seq INTEGER DEFAULT 0,
             current_state TEXT,
+            cover_art TEXT,
             created_at INTEGER,
             updated_at INTEGER,
             last_played_at INTEGER
@@ -125,6 +126,17 @@ class AppDatabase {
           )
         ''');
         await db.execute('''
+          CREATE TABLE npc_memories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            story_id INTEGER NOT NULL,
+            npc_name TEXT NOT NULL,
+            fact TEXT NOT NULL,
+            importance REAL DEFAULT 0.5,
+            active INTEGER DEFAULT 1,
+            created_seq INTEGER DEFAULT 0
+          )
+        ''');
+        await db.execute('''
           CREATE TABLE world_snapshots (
             story_id INTEGER NOT NULL,
             seq INTEGER NOT NULL,
@@ -149,17 +161,33 @@ class AppDatabase {
           }
           await batch.commit(noResult: true);
         }
-        if (oldVersion < 3) {
-          await db.execute('''
-            CREATE TABLE IF NOT EXISTS world_snapshots (
-              story_id INTEGER NOT NULL,
-              seq INTEGER NOT NULL,
-              snapshot TEXT NOT NULL,
-              PRIMARY KEY (story_id, seq)
-            )
-          ''');
-        }
-      },
+         if (oldVersion < 3) {
+           await db.execute('''
+             CREATE TABLE IF NOT EXISTS world_snapshots (
+               story_id INTEGER NOT NULL,
+               seq INTEGER NOT NULL,
+               snapshot TEXT NOT NULL,
+               PRIMARY KEY (story_id, seq)
+             )
+           ''');
+         }
+         if (oldVersion < 4) {
+           await db.execute('''
+             CREATE TABLE IF NOT EXISTS npc_memories (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               story_id INTEGER NOT NULL,
+               npc_name TEXT NOT NULL,
+               fact TEXT NOT NULL,
+               importance REAL DEFAULT 0.5,
+               active INTEGER DEFAULT 1,
+               created_seq INTEGER DEFAULT 0
+             )
+           ''');
+         }
+         if (oldVersion < 5) {
+           await db.execute('ALTER TABLE stories ADD COLUMN cover_art TEXT');
+         }
+       },
     );
   }
 
@@ -308,6 +336,7 @@ class AppDatabase {
       'turn_count': s.turnCount,
       'last_message_seq': s.lastMessageSeq,
       'current_state': jsonEncode(s.currentState),
+      'cover_art': s.coverArt,
       'created_at': now,
       'updated_at': now,
       'last_played_at': now,
@@ -340,22 +369,25 @@ class AppDatabase {
         createdAt: (r['created_at'] as num?)?.toInt() ?? 0,
         updatedAt: (r['updated_at'] as num?)?.toInt() ?? 0,
         lastPlayedAt: (r['last_played_at'] as num?)?.toInt() ?? 0,
+        coverArt: r['cover_art'] as String?,
       );
 
   Future<void> updateStory(Story s) async {
     final db = await instance.db;
-    await db.update(
-      'stories',
-      {
-        'title': s.title,
-        'character': jsonEncode(s.character?.toJson() ?? {}),
-        'status': s.status,
-        'turn_count': s.turnCount,
-        'last_message_seq': s.lastMessageSeq,
-        'current_state': jsonEncode(s.currentState),
-        'updated_at': DateTime.now().millisecondsSinceEpoch,
-        'last_played_at': DateTime.now().millisecondsSinceEpoch,
-      },
+await db.update(
+        'stories',
+        {
+          'title': s.title,
+          'scenario_id': s.scenarioId,
+          'character': jsonEncode(s.character?.toJson() ?? {}),
+          'status': s.status,
+          'turn_count': s.turnCount,
+          'last_message_seq': s.lastMessageSeq,
+          'current_state': jsonEncode(s.currentState),
+          'cover_art': s.coverArt,
+          'updated_at': DateTime.now().millisecondsSinceEpoch,
+          'last_played_at': DateTime.now().millisecondsSinceEpoch,
+        },
       where: 'id = ?',
       whereArgs: [s.id],
     );
@@ -773,5 +805,50 @@ class AppDatabase {
     );
     if (rows.isEmpty) return null;
     return _decodeMap(rows.first['snapshot']);
+  }
+
+  // ------------------------------------------------------------------- //
+  // NPC memories (per-character recall — keeps cast alive)
+  // ------------------------------------------------------------------- //
+  Future<int> insertNpcMemory(NPCMemory m) async {
+    final db = await instance.db;
+    return db.insert('npc_memories', {
+      'story_id': m.storyId,
+      'npc_name': m.npcName,
+      'fact': m.fact,
+      'importance': m.importance,
+      'active': m.active ? 1 : 0,
+      'created_seq': m.createdSeq,
+    });
+  }
+
+  Future<List<NPCMemory>> npcMemoriesForStory(int storyId) async {
+    final db = await instance.db;
+    final rows = await db.query(
+      'npc_memories',
+      where: 'story_id = ? AND active = 1',
+      whereArgs: [storyId],
+      orderBy: 'importance DESC, id ASC',
+    );
+    return rows.map((r) => NPCMemory(
+          id: r['id'] as int,
+          storyId: storyId,
+          npcName: r['npc_name'] as String? ?? '',
+          fact: r['fact'] as String? ?? '',
+          importance: (r['importance'] as num?)?.toDouble() ?? 0.5,
+          active: (r['active'] == 1),
+          createdSeq: (r['created_seq'] as num?)?.toInt() ?? 0,
+        )).toList();
+  }
+
+  Future<void> setNpcMemoryActive(int memoryId, bool active) async {
+    final db = await instance.db;
+    await db.update('npc_memories', {'active': active ? 1 : 0},
+        where: 'id = ?', whereArgs: [memoryId]);
+  }
+
+  Future<void> deleteNpcMemoriesForStory(int storyId) async {
+    final db = await instance.db;
+    await db.delete('npc_memories', where: 'story_id = ?', whereArgs: [storyId]);
   }
 }

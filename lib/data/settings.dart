@@ -8,6 +8,8 @@ class AppSettings {
   AppSettings({
     this.apiKey = '',
     this.model = 'gemini-3.6-flash',
+    this.providerType = 'gemini',
+    this.apiBaseUrl = '',
     this.temperature = 0.9,
     this.maxOutputTokens = 1024,
     this.contextMessages = 16,
@@ -19,6 +21,8 @@ class AppSettings {
 
   String apiKey;
   String model;
+  String providerType; // 'gemini' | 'openrouter' | 'custom'
+  String apiBaseUrl;
   double temperature;
   int maxOutputTokens;
   int contextMessages;
@@ -30,6 +34,8 @@ class AppSettings {
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
         apiKey: (j['api_key'] as String?) ?? '',
         model: (j['model'] as String?) ?? 'gemini-3.6-flash',
+        providerType: (j['provider_type'] as String?) ?? 'gemini',
+        apiBaseUrl: (j['api_base_url'] as String?) ?? '',
         temperature: (j['temperature'] as num?)?.toDouble() ?? 0.9,
         maxOutputTokens: (j['max_output_tokens'] as num?)?.toInt() ?? 1024,
         contextMessages: (j['context_messages'] as num?)?.toInt() ?? 16,
@@ -52,15 +58,20 @@ class SettingsStore {
     final raw = prefs.getString(_key);
     AppSettings settings;
     try {
-      settings = AppSettings.fromJson(jsonDecode(raw ?? '') as Map<String, dynamic>);
+      settings =
+          AppSettings.fromJson(jsonDecode(raw ?? '') as Map<String, dynamic>);
     } catch (_) {
       settings = AppSettings();
     }
     final secureKey = await _readSecureKey();
     if (secureKey.isNotEmpty) settings.apiKey = secureKey;
-    if (!supportedModels.contains(settings.model)) {
-      settings.model = supportedModels.first;
+
+    // Migrate old settings if needed
+    if (settings.providerType == 'gemini' &&
+        settings.model.startsWith('openrouter/')) {
+      settings.providerType = 'openrouter';
     }
+
     return settings;
   }
 
@@ -74,16 +85,20 @@ class SettingsStore {
 
   Future<void> save(AppSettings s) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, jsonEncode({
-      'model': s.model,
-      'temperature': s.temperature,
-      'max_output_tokens': s.maxOutputTokens,
-      'context_messages': s.contextMessages,
-      'auto_memory': s.autoMemory,
-      'summarize_every_turns': s.summarizeEveryTurns,
-      'max_suggestions': s.maxSuggestions,
-      'dark_mode': s.darkMode,
-    }));
+    await prefs.setString(
+        _key,
+        jsonEncode({
+          'model': s.model,
+          'provider_type': s.providerType,
+          'api_base_url': s.apiBaseUrl,
+          'temperature': s.temperature,
+          'max_output_tokens': s.maxOutputTokens,
+          'context_messages': s.contextMessages,
+          'auto_memory': s.autoMemory,
+          'summarize_every_turns': s.summarizeEveryTurns,
+          'max_suggestions': s.maxSuggestions,
+          'dark_mode': s.darkMode,
+        }));
     try {
       if (s.apiKey.trim().isNotEmpty) {
         await _storage.write(key: _secureKey, value: s.apiKey);
@@ -91,30 +106,46 @@ class SettingsStore {
         await _storage.delete(key: _secureKey);
       }
     } catch (_) {
-      // Secure storage unavailable (e.g. some test/CI environments) — the key
-      // simply won't persist; it is never logged or toasted.
+      // Secure storage unavailable
     }
   }
 }
 
-const supportedModels = [
-  // Gemini (free tier)
+const supportedGeminiModels = [
+  'gemini-3.8-flash',
+  'gemini-3.8-flash-lite',
+  'gemini-3.7-flash',
   'gemini-3.6-flash',
   'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
+  'gemini-3.1-flash',
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+];
 
-  // OpenRouter (free models)
+const supportedOpenRouterModels = [
   'openrouter/free',
-  'openrouter/nvidia/nemotron-3-ultra-550b-a55b:free',
-  'openrouter/minimax/minimax-m3:free',
-  'openrouter/nvidia/nemotron-3.5-lightning:free',
-  'openrouter/z-ai/glm-5.2:free',
-  'openrouter/google/gemma-4-31b-it:free',
+  'google/gemma-4-31b-it:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3.5-lightning:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'liquid/lfm-2.5-2.6b:free',
+  'cohere/north-mini-code:free',
+  'poolside/laguna-s-2.1:free',
+  'thinkingmachines/inkling:free',
+  'apodex/apodex-1.1-mini:free',
 ];
 
 /// Returns true if the model string refers to an OpenRouter model.
-bool isOpenRouterModel(String model) => model.startsWith('openrouter/');
+bool isOpenRouterModel(String model) =>
+    model.startsWith('openrouter/') ||
+    model.contains('/') ||
+    model.contains(':free');
 
 /// Strips the `openrouter/` prefix to get the actual model ID for the API.
 String openRouterModelId(String model) =>

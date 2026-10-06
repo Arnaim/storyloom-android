@@ -15,8 +15,64 @@ Color gradientColorFor(String seedText) {
   return genreGradients[hash % genreGradients.length];
 }
 
+/// A distinctive icon per genre so the Discover grid isn't a wall of the same
+/// gradient box. Falls back to an auto-stories icon for unknown genres.
+IconData genreIconFor(String text) {
+  final t = text.toLowerCase();
+  if (t.contains('zombie') || t.contains('horror') || t.contains('undead')) {
+    return Icons.sentiment_very_dissatisfied_outlined;
+  }
+  if (t.contains('magic') || t.contains('academy') || t.contains('arcane')) {
+    return Icons.auto_awesome;
+  }
+  if (t.contains('isekai') || t.contains('fantasy') || t.contains('adventure')) {
+    return Icons.explore_outlined;
+  }
+  if (t.contains('cyber') || t.contains('sci') || t.contains('space') ||
+      t.contains('orbit') || t.contains('neon')) {
+    return Icons.rocket_launch_outlined;
+  }
+  if (t.contains('noir') || t.contains('detective') || t.contains('mystery') ||
+      t.contains('spy') || t.contains('crime')) {
+    return Icons.search_off;
+  }
+  if (t.contains('romance') || t.contains('love') || t.contains('heart')) {
+    return Icons.favorite_outline;
+  }
+  if (t.contains('vampire') || t.contains('gothic') || t.contains('dark')) {
+    return Icons.wb_twilight;
+  }
+  if (t.contains('war') || t.contains('battle') || t.contains('warrior') ||
+      t.contains('hero') || t.contains('king')) {
+    return Icons.sports_martial_arts_outlined;
+  }
+  if (t.contains('school') || t.contains('slice') || t.contains('cozy') ||
+      t.contains('slice-of-life') || t.contains('school life')) {
+    return Icons.school_outlined;
+  }
+    if (t.contains('political') || t.contains('thriller') || t.contains('court') ||
+      t.contains('crown')) {
+    return Icons.flag_outlined;
+  }
+  if (t.contains('western') || t.contains('marshal')) {
+    return Icons.park;
+  }
+  if (t.contains('pirate') || t.contains('sea') || t.contains('ocean')) {
+    return Icons.sailing_outlined;
+  }
+  if (t.contains('post') || t.contains('wasteland') || t.contains('apocalyp') ||
+      t.contains('outpost') || t.contains('raider')) {
+    return Icons.warning_amber;
+  }
+  if (t.contains('1-on-1') || t.contains('roleplay') || t.contains('role play')) {
+    return Icons.person_search_outlined;
+  }
+  return Icons.auto_stories_outlined;
+}
+
 /// A deterministic, layered gradient banner used as a scenario "cover" when
-/// no image exists. Diagonal blend + soft radial glow + faint rings.
+/// no image exists. Diagonal blend + soft radial glow + faint rings + a genre
+/// glyph so each card reads as a distinct world at a glance.
 class GenreBanner extends StatelessWidget {
   const GenreBanner({super.key, required this.label, this.height = 120, this.icon});
 
@@ -154,6 +210,8 @@ class ScenarioCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cover = scenario.coverArt;
+    final label = scenario.genre.isNotEmpty ? scenario.genre : scenario.title;
+    final icon = genreIconFor(label);
     if (cover != null && cover.isNotEmpty) {
       final isFile = cover.startsWith('/') || cover.startsWith('file:');
       return SizedBox(
@@ -165,25 +223,18 @@ class ScenarioCover extends StatelessWidget {
                     ? Uri.parse(cover).toFilePath().replaceFirst(Platform.isWindows ? '/': '', '')
                     : cover),
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => GenreBanner(
-                  label: scenario.genre.isNotEmpty ? scenario.genre : scenario.title,
-                  height: height,
-                ),
+                errorBuilder: (_, _, _) =>
+                    GenreBanner(label: label, height: height, icon: icon),
               )
             : Image.asset(
                 cover,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => GenreBanner(
-                  label: scenario.genre.isNotEmpty ? scenario.genre : scenario.title,
-                  height: height,
-                ),
+                errorBuilder: (_, _, _) =>
+                    GenreBanner(label: label, height: height, icon: icon),
               ),
       );
     }
-    return GenreBanner(
-      label: scenario.genre.isNotEmpty ? scenario.genre : scenario.title,
-      height: height,
-    );
+    return GenreBanner(label: label, height: height, icon: icon);
   }
 }
 
@@ -289,6 +340,9 @@ class StoryTile extends StatelessWidget {
       if (location.isNotEmpty) location,
       '${story.turnCount} turn${story.turnCount == 1 ? '' : 's'}',
     ].join(' · ');
+    final cover = (story.coverArt != null && story.coverArt!.isNotEmpty)
+        ? story.coverArt
+        : null;
     return ListTile(
       onTap: onTap,
       onLongPress: onDelete != null
@@ -317,10 +371,23 @@ class StoryTile extends StatelessWidget {
               if (confirmed == true) onDelete?.call();
             }
           : null,
-      leading: CircleAvatar(
-        backgroundColor: gradientColorFor(story.title).withValues(alpha: 0.75),
-        foregroundColor: Colors.white,
-        child: Text(story.title.isNotEmpty ? story.title[0].toUpperCase() : '?'),
+      leading: Container(
+        width: 48,
+        height: 48,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: gradientColorFor(story.title).withValues(alpha: 0.75),
+        ),
+        child: cover != null
+            ? (cover.startsWith('/')
+                ? Image.file(File(cover), fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) =>
+                        _letterAvatar(story.title))
+                : Image.asset(cover, fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) =>
+                        _letterAvatar(story.title)))
+            : _letterAvatar(story.title),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(story.title, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -328,6 +395,17 @@ class StoryTile extends StatelessWidget {
       trailing: const Icon(Icons.chevron_right),
     );
   }
+
+  Widget _letterAvatar(String title) => Container(
+        color: gradientColorFor(title).withValues(alpha: 0.75),
+        child: Center(
+          child: Text(
+            title.isNotEmpty ? title[0].toUpperCase() : '?',
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
+          ),
+        ),
+      );
 }
 
 // Decoration helpers for message cards.

@@ -9,6 +9,7 @@ import '../models/scenario.dart';
 ///   world:  {current_location, time_of_day, weather}
 ///   facts:  []  (established world facts, bounded)
 ///   flags:  {}  (free-form)
+///   branching: {act, branch, arc_progress, tone}
 const int maxFacts = 24;
 const int conditionsMax = 8;
 
@@ -29,8 +30,27 @@ Map<String, dynamic> defaultState(Scenario scenario, Character? character) {
     },
     'facts': <String>[],
     'flags': <String, dynamic>{},
+    'branching': {
+      'act': 1,
+      'branch': '',
+      'arc_progress': 0.0,
+      'tone': scenario.tone.trim().isNotEmpty ? scenario.tone : 'neutral',
+    },
   };
 }
+
+/// Current branch id — empty string means the default/original path.
+String currentBranch(Map<String, dynamic> state) =>
+    (state['branching'] as Map<String, dynamic>?)?['branch'] as String? ?? '';
+
+int currentAct(Map<String, dynamic> state) =>
+    (state['branching'] as Map<String, dynamic>?)?['act'] as int? ?? 1;
+
+double currentArcProgress(Map<String, dynamic> state) =>
+    (state['branching'] as Map<String, dynamic>?)?['arc_progress'] as double? ?? 0.0;
+
+String currentTone(Map<String, dynamic> state) =>
+    (state['branching'] as Map<String, dynamic>?)?['tone'] as String? ?? 'neutral';
 
 /// Mutates [state] in place; returns human-readable change notes for system cards.
 List<String> applyAnalysis(Map<String, dynamic> state, TurnAnalysis analysis) {
