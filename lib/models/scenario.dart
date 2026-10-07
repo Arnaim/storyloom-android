@@ -23,6 +23,8 @@ class Scenario {
     required this.playCount,
     this.author = 'Storyloom',
     this.coverArt,
+    this.backgroundArt,
+    this.seedVersion = 0,
     this.forks = const [],
   });
 
@@ -48,11 +50,13 @@ class Scenario {
   final int playCount;
   final String author;
   final String? coverArt;
+  final String? backgroundArt;
+  final int seedVersion;
   final List<Fork> forks;
 
   String get ratingLabel => contentRating == 'mature' ? 'Mature' : 'General';
 
-  Scenario copyWith({String? coverArt, List<Fork>? forks}) => Scenario(
+  Scenario copyWith({String? coverArt, String? backgroundArt, int? seedVersion, List<Fork>? forks}) => Scenario(
         id: id,
         title: title,
         description: description,
@@ -75,6 +79,8 @@ class Scenario {
         playCount: playCount,
         author: author,
         coverArt: coverArt ?? this.coverArt,
+        backgroundArt: backgroundArt ?? this.backgroundArt,
+        seedVersion: seedVersion ?? this.seedVersion,
         forks: forks ?? this.forks,
       );
 
@@ -101,6 +107,8 @@ class Scenario {
         'play_count': playCount,
         'author': author,
         'cover_art': coverArt,
+        'background_art': backgroundArt,
+        'seed_version': seedVersion,
         'forks': forks.map((f) => f.toJson()).toList(),
       };
 
@@ -127,6 +135,8 @@ class Scenario {
         playCount: (j['play_count'] as num?)?.toInt() ?? 0,
         author: (j['author'] as String?) ?? 'Storyloom',
         coverArt: (j['cover_art'] as String?) ?? '',
+        backgroundArt: (j['background_art'] as String?) ?? '',
+        seedVersion: (j['seed_version'] as num?)?.toInt() ?? 0,
         forks: _forks(j['forks']),
       );
 

@@ -2062,8 +2062,8 @@ class SeedScenarios {
           'The first thing you notice is the cold. Not the kind that wakes you up slowly. The kind that hits all at once — stone against your cheek, damp air filling your lungs before your brain has caught up to the fact that you\'re not in your bed where you\'re supposed to be. Your eyes open. The ceiling above you is stone. Rough, dark, carved out of something ancient and covered in glowing runes. Torchlight flickers from brackets along the walls throwing shadows that move like they\'re alive. The air smells like stale earth. You sit up slowly. Your head is pounding. You\'re in a dungeon. An actual dungeon. Then you hear her voice. "Rise and shine, loser." You turn. Riko is crouched beside you, close enough that you could reach out and shove her. She\'s watching you with that same expression she always had back in high school, the one that means she\'s already decided this is going to be entertaining. She looks exactly the same as she did years ago except older, more mature, and the fact that you recognized her immediately after all this time says something you don\'t want to think about. Before you can say anything a scream cuts through the air. You spin toward the sound. Yui, who you also haven\'t seen in years, is pressed against the far wall, eyes squeezed shut, both hands wrapped around a staff that\'s glowing faintly at the top. She\'s trembling. Then something roars. It\'s close. Close enough that you feel it in your chest. You spin the other direction and your stomach drops. Kana is already on her feet, facing something in the corridor ahead. You can\'t see it clearly from here, just a shape, large and dark. Kana\'s hands are raised and there are claws where her fingers should be, long and green and catching the torchlight, and she\'s swiping at the thing with a focused expression. A ball of pink light streaks past your head. "This is annoying," Rei says, from somewhere to your left, in the flattest voice you\'ve ever heard. She\'s standing a few feet away with one hand raised, looking at the corridor like she\'s mildly inconvenienced rather than in a dungeon fighting something that shouldn\'t exist. Her expression doesn\'t change as she fires another spell. Then someone steps in front of you. Akane moves like she was born walking into rooms that need to be managed. She\'s completely composed. Her hair is perfect. She looks down at you with an expression that\'s warm and pleasant and somehow still makes you feel like you\'re slightly beneath her, which is impressive given that you\'re both currently trapped in what appears to be a fantasy dungeon. "Good," she says. "You\'re awake." She glances toward the corridor where Kana is still fighting, then back to you. Her voice is calm. Unhurried. Like she\'s giving you a meeting agenda. "Now grab your weapon."',
       'world_description':
           'A sprawling dungeon with multiple floors, each containing different environments — corridors, chambers, treasure rooms, monster nests, and ancient libraries. The dungeon seems to be alive, shifting its layout occasionally. Magical items and resources are scattered throughout. The outside world is unknown — no windows, no exits, just the endless stone and the occasional strange phenomenon.',
-      'rules':
-          'All six characters retain their personalities, memories, and dynamics from high school. NPCs interact with each other independently of the player. The dungeon changes over time — new floors unlock, old ones shift. Romance is possible but never automatic and depends on the relationships that existed before the summoning. The player is not automatically the strongest or most capable. Characters can succeed or fail at tasks independently. The dungeon has its own agenda that may or may not be connected to the summoning.',
+'rules':
+           'All six characters retain their personalities, memories, and dynamics from high school, but they are now older and more mature. They have had time to reflect on their past actions, and many carry genuine guilt and a desire to change. NPCs interact with each other independently of the player. The dungeon changes over time — new floors unlock, old ones shift. Romance is possible but never automatic and depends on the relationships that existed before the summoning and the growth that has occurred since. The player is not automatically the strongest or most capable. Characters can succeed or fail at tasks independently. The dungeon has its own agenda that may or may not be connected to the summoning. The past is not forgotten — old grudges and wounds may resurface, but characters should show growth, maturity, and the potential for redemption. Not everyone will change overnight, and some may resist growth, but the overall dynamic should reflect people who have lived and learned.',
       'tone':
           'A mix of dungeon survival tension, high school drama, comedy, and slowly unfolding mystery. Early scenes should capture the shock of being in a dungeon with people you know, before gradually revealing why you were all brought here.',
       'narrator_style':
@@ -2072,48 +2072,48 @@ class SeedScenarios {
       'rpg_enabled': true,
       'player_role':
           'A male high school student summoned to a dungeon with his former classmates and bullies.',
-      'npcs': [
-        {
-          'name': 'Riko',
-          'description': 'The bully who made your life hell. Crouching beside you when you wake up.',
-          'personality': 'Confident, cruel, but not entirely heartless. Protective in her own way.',
-          'profession_class': 'Dungeon Fighter',
-          'speech_style': 'Direct and teasing.',
-          'backstory_hook': 'Riko has her own reasons for being here that have nothing to do with the summoning.'
-        },
-        {
-          'name': 'Rei',
-          'description': 'A bully who is always calm and unbothered.',
-          'personality': 'Cold, analytical, detached, occasionally terrifying.',
-          'profession_class': 'Dungeon Mage',
-          'speech_style': 'Flat and bored.',
-          'backstory_hook': 'Rei seems to understand more about the dungeon than she lets on.'
-        },
-        {
-          'name': 'Akane',
-          'description': 'A bully who is always perfectly composed.',
-          'personality': 'Controlled, strategic, warm on the surface but calculating.',
-          'profession_class': 'Dungeon Healer / Tactician',
-          'speech_style': 'Calm and measured.',
-          'backstory_hook': 'Akane was always the one who knew the right people. Here, that knowledge may matter.'
-        },
-        {
-          'name': 'Kana',
-          'description': 'A bully who is aggressive and physical.',
-          'personality': 'Hot-headed, loyal, fierce when protecting someone.',
-          'profession_class': 'Dungeon Warrior',
-          'speech_style': 'Blunt and emotional.',
-          'backstory_hook': 'Kana has always been angry about something. The dungeon may be why.'
-        },
-        {
-          'name': 'Yui',
-          'description': 'The kind one who never had the courage to stand up to the others.',
-          'personality': 'Gentle, timid, surprisingly brave when it counts.',
-          'profession_class': 'Dungeon Support / Mage',
-          'speech_style': 'Soft and hesitant, confident when helping.',
-          'backstory_hook': 'Yui knows something about the summoning that she\'s been too afraid to say.'
-        }
-      ],
+       'npcs': [
+         {
+           'name': 'Riko',
+           'description': 'The bully who made your life hell. Now older and carrying guilt for her past actions, she tries to mask it with bravado but shows moments of genuine remorse.',
+           'personality': 'Confident but haunted, cruel in the past but now seeking redemption. Protective in her own way, though she questions if she deserves to be.',
+           'profession_class': 'Dungeon Fighter',
+           'speech_style': 'Direct and teasing, but occasionally her voice cracks with regret when discussing the past.',
+           'backstory_hook': 'Riko has her own reasons for being here that have nothing to do with the summoning, but she wonders if this is a chance to make amends.'
+         },
+         {
+           'name': 'Rei',
+           'description': 'A bully who was always calm and unbothered. Now she carries the weight of her past actions, her detachment replaced by quiet guilt and introspection.',
+           'personality': 'Once cold and analytical, now prone to moments of deep reflection and shame. Still detached at times, but her eyes often linger on you with unspoken apology.',
+           'profession_class': 'Dungeon Mage',
+           'speech_style': 'Flat and bored on the surface, but when alone she mutters apologies to herself.',
+           'backstory_hook': 'Rei seems to understand more about the dungeon than she lets on, and she suspects it might be somehow connected to the guilt they all carry.'
+         },
+         {
+           'name': 'Akane',
+           'description': 'A bully who was always perfectly composed. Now her composure is strained by guilt, her calculated nature replaced by hesitant attempts to make things right.',
+           'personality': 'Once controlled and strategic, now struggling with whether to apologize or prove herself through actions. Warm on the surface but tormented underneath.',
+           'profession_class': 'Dungeon Healer / Tactician',
+           'speech_style': 'Calm and measured, but she often pauses before speaking, choosing her words carefully.',
+           'backstory_hook': 'Akane was always the one who knew the right people. Now she wonders if knowing the right people matters less than doing the right thing.'
+         },
+         {
+           'name': 'Kana',
+           'description': 'A bully who was aggressive and physical. Now her fierceness is channeled into protection rather than aggression, her anger replaced by a fierce determination to atone.',
+           'personality': 'Once hot-headed and loyal, now fiercely protective but questioning if protection is enough to balance the scales. Still fierce when protecting someone, but now with purpose rather than just anger.',
+           'profession_class': 'Dungeon Warrior',
+           'speech_style': 'Blunt and emotional, but her emotions now often lean toward sorrow rather than just anger.',
+           'backstory_hook': 'Kana has always been angry about something. Now she wonders if that anger was misdirected, and if the dungeon is giving her a chance to redirect it toward something better.'
+         },
+         {
+           'name': 'Yui',
+           'description': 'The kind one who never had the courage to stand up to the others. Now she\'s surprised to see her former tormentors showing genuine remorse, and she struggles with whether to trust it.',
+           'personality': 'Gentle, timid, surprisingly brave when it counts. Now also cautious and wary, hoping the change is real but afraid to hope too hard.',
+           'profession_class': 'Dungeon Support / Mage',
+           'speech_style': 'Soft and hesitant, confident when helping but quick to retreat when confrontation looms.',
+           'backstory_hook': 'Yui knows something about the summoning that she\'s been too afraid to say. Now she wonders if speaking up might help them all find peace.'
+         }
+       ],
       'locations': [
         {'name': 'The Entrance Chamber', 'description': 'Where all six of you woke up.'},
         {'name': 'The Corridor', 'description': 'A long stone passage with torchlight and occasional monsters.'},

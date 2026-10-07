@@ -23,7 +23,7 @@ class AppDatabase {
     final path = p.join(dir, 'storyloom.db');
     return openDatabase(
       path,
-       version: 5,
+       version: 6,
        onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE scenarios (
@@ -48,7 +48,9 @@ class AppDatabase {
             is_sample INTEGER DEFAULT 0,
             play_count INTEGER DEFAULT 0,
             author TEXT DEFAULT 'Storyloom',
-            cover_art TEXT
+            cover_art TEXT,
+            background_art TEXT,
+            seed_version INTEGER DEFAULT 0
           )
         ''');
         await db.execute('''
@@ -62,6 +64,7 @@ class AppDatabase {
             last_message_seq INTEGER DEFAULT 0,
             current_state TEXT,
             cover_art TEXT,
+            background_art TEXT,
             created_at INTEGER,
             updated_at INTEGER,
             last_played_at INTEGER
@@ -92,7 +95,8 @@ class AppDatabase {
             relationship_value REAL DEFAULT 0,
             emotional_state TEXT DEFAULT '',
             status TEXT DEFAULT 'alive',
-            location TEXT DEFAULT ''
+            location TEXT DEFAULT '',
+            image TEXT
           )
         ''');
         await db.execute('''
@@ -187,6 +191,12 @@ class AppDatabase {
          if (oldVersion < 5) {
            await db.execute('ALTER TABLE stories ADD COLUMN cover_art TEXT');
          }
+         if (oldVersion < 6) {
+           await db.execute('ALTER TABLE scenarios ADD COLUMN background_art TEXT');
+           await db.execute('ALTER TABLE scenarios ADD COLUMN seed_version INTEGER DEFAULT 0');
+           await db.execute('ALTER TABLE stories ADD COLUMN background_art TEXT');
+           await db.execute('ALTER TABLE npcs ADD COLUMN image TEXT');
+         }
        },
     );
   }
@@ -216,18 +226,44 @@ class AppDatabase {
         'play_count': s.playCount,
         'author': s.author,
         'cover_art': s.coverArt,
+        'background_art': s.backgroundArt,
+        'seed_version': s.seedVersion,
       };
+
+  static const _currentSeedVersion = 1;
 
   Future<void> seedIfEmpty() async {
     final db = await instance.db;
     final count = Sqflite.firstIntValue(
         await db.rawQuery('SELECT COUNT(*) FROM scenarios WHERE is_sample = 1'));
-    if ((count ?? 0) > 0) return;
+    if ((count ?? 0) > 0) {
+      // Check if we need to update the sample scenarios due to a version change
+      final seedVer = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT seed_version FROM scenarios WHERE is_sample = 1 LIMIT 1'));
+      if ((seedVer ?? 0) < _currentSeedVersion) {
+        await _refreshSamples(db);
+      }
+      return;
+    }
     final batch = db.batch();
     for (final s in SeedScenarios.all) {
       batch.insert('scenarios', {
         ..._scenRow(Scenario.fromJson(
-            {...s, 'is_sample': true, 'id': 0, 'play_count': 0})),
+            {...s, 'is_sample': true, 'id': 0, 'play_count': 0, 'seed_version': _currentSeedVersion})),
+        'id': null,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> _refreshSamples(Database db) async {
+    // Delete old sample scenarios and re-insert the current ones
+    await db.delete('scenarios', where: 'is_sample = 1');
+    final batch = db.batch();
+    for (final s in SeedScenarios.all) {
+      batch.insert('scenarios', {
+        ..._scenRow(Scenario.fromJson(
+            {...s, 'is_sample': true, 'id': 0, 'play_count': 0, 'seed_version': _currentSeedVersion})),
         'id': null,
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
@@ -296,6 +332,8 @@ class AppDatabase {
         'play_count': r['play_count'],
         'author': r['author'],
         'cover_art': r['cover_art'],
+        'background_art': r['background_art'],
+        'seed_version': r['seed_version'] as int? ?? 0,
       };
 
   // ------------------------------------------------------------------- //
@@ -337,6 +375,7 @@ class AppDatabase {
       'last_message_seq': s.lastMessageSeq,
       'current_state': jsonEncode(s.currentState),
       'cover_art': s.coverArt,
+      'background_art': s.backgroundArt,
       'created_at': now,
       'updated_at': now,
       'last_played_at': now,
@@ -357,7 +396,7 @@ class AppDatabase {
     return rows.map(_storyFromRow).toList();
   }
 
-  Story _storyFromRow(Map<String, Object?> r) => Story(
+Story _storyFromRow(Map<String, Object?> r) => Story(
         id: r['id'] as int,
         title: (r['title'] as String?) ?? '',
         scenarioId: (r['scenario_id'] as num?)?.toInt() ?? 0,
@@ -370,11 +409,12 @@ class AppDatabase {
         updatedAt: (r['updated_at'] as num?)?.toInt() ?? 0,
         lastPlayedAt: (r['last_played_at'] as num?)?.toInt() ?? 0,
         coverArt: r['cover_art'] as String?,
+        backgroundArt: r['background_art'] as String?,
       );
 
   Future<void> updateStory(Story s) async {
     final db = await instance.db;
-await db.update(
+    await db.update(
         'stories',
         {
           'title': s.title,
@@ -385,6 +425,7 @@ await db.update(
           'last_message_seq': s.lastMessageSeq,
           'current_state': jsonEncode(s.currentState),
           'cover_art': s.coverArt,
+          'background_art': s.backgroundArt,
           'updated_at': DateTime.now().millisecondsSinceEpoch,
           'last_played_at': DateTime.now().millisecondsSinceEpoch,
         },
@@ -416,7 +457,7 @@ await db.update(
   /// row itself and its scenario link are kept.
   Future<void> deleteWorldData(int storyId) async {
     final db = await instance.db;
-    for (final table in ['npcs', 'quests', 'inventory_items', 'memories']) {
+    for (final table in ['npcs', 'quests', 'inventory_items', 'memories', 'npc_memories']) {
       await db.delete(table, where: 'story_id = ?', whereArgs: [storyId]);
     }
     await db.delete('world_snapshots', where: 'story_id = ?', whereArgs: [storyId]);
@@ -435,6 +476,11 @@ await db.update(
   Future<void> deleteMessagesAfterSeq(int storyId, int seq) async {
     final db = await instance.db;
     await db.delete('messages', where: 'story_id = ? AND seq > ?', whereArgs: [storyId, seq]);
+    // Clean up memories created after this sequence to prevent AI remembering deleted text
+    await db.delete('memories', where: 'story_id = ? AND created_seq > ?', whereArgs: [storyId, seq]);
+    await db.delete('npc_memories', where: 'story_id = ? AND created_seq > ?', whereArgs: [storyId, seq]);
+    // Also clean up world snapshots after this sequence
+    await db.delete('world_snapshots', where: 'story_id = ? AND seq > ?', whereArgs: [storyId, seq]);
   }
 
   // ------------------------------------------------------------------- //
@@ -547,6 +593,7 @@ await db.update(
               emotionalState: (r['emotional_state'] as String?) ?? '',
               status: (r['status'] as String?) ?? 'alive',
               location: (r['location'] as String?) ?? '',
+              image: (r['image'] as String?),
             ))
         .toList();
   }
@@ -571,6 +618,7 @@ await db.update(
           'emotional_state': npc.emotionalState,
           'status': npc.status,
           'location': npc.location,
+          'image': npc.image,
         },
         where: 'id = ?',
         whereArgs: [npc.id],
@@ -584,6 +632,7 @@ await db.update(
         'emotional_state': npc.emotionalState,
         'status': npc.status,
         'location': npc.location,
+        'image': npc.image,
       });
     }
   }

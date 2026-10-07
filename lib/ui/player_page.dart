@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 
 import '../app_state.dart';
 import '../data/database.dart';
@@ -337,6 +338,21 @@ class _PlayerRouteState extends State<PlayerRoute> {
         Expanded(
           child: Stack(
             children: [
+              // Background image
+              if (_story.backgroundArt != null && _story.backgroundArt!.isNotEmpty)
+                Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: FileImage(File(_story.backgroundArt!)),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withValues(alpha: 0.3),
+                        BlendMode.dstOut,
+                      ),
+                    ),
+                  ),
+                ),
+              // Message list
               ListView(
                 controller: _scroll,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -435,6 +451,12 @@ class _PlayerRouteState extends State<PlayerRoute> {
                 onTap: () => Navigator.pop(ctx, 'rewind'),
               ),
             ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit message'),
+              subtitle: const Text('Edit this message and continue from the edited version'),
+              onTap: () => Navigator.pop(ctx, 'edit'),
+            ),
+            ListTile(
               leading: Icon(Icons.delete_outline,
                   color: Theme.of(context).colorScheme.error),
               title: Text('Delete from here',
@@ -448,12 +470,14 @@ class _PlayerRouteState extends State<PlayerRoute> {
         ),
       ),
     );
-    if (!mounted || action == null) return;
-    if (action == 'rewind') {
-      _rewindToPoint(m.seq);
-    } else if (action == 'delete') {
-      _confirmDeleteFrom(m.seq);
-    }
+     if (!mounted || action == null) return;
+     if (action == 'rewind') {
+       _rewindToPoint(m.seq);
+     } else if (action == 'edit') {
+       _editMessage(m);
+     } else if (action == 'delete') {
+       _confirmDeleteFrom(m.seq);
+     }
   }
 
   /// Pure rewind (no new action) — returns the world to right after [seq].
@@ -739,9 +763,55 @@ class _PlayerRouteState extends State<PlayerRoute> {
       await AppDatabase.instance.deleteStory(_storyId);
       if (mounted) Navigator.of(context).pop();
     }
-  }
+   }
 
-  Future<void> _confirmRestart() async {
+   Future<void> _editMessage(StoryMessage message) async {
+     final controller = TextEditingController(text: message.content);
+     final result = await showDialog<String>(
+       context: context,
+       builder: (context) => AlertDialog(
+         title: Text(message.isUser
+             ? (message.isUserAction ? 'Edit your action' : 'Edit your message')
+             : 'Edit narration'),
+         content: TextField(
+           controller: controller,
+           minLines: 3,
+           maxLines: 5,
+           decoration: const InputDecoration(
+             border: OutlineInputBorder(),
+             hintText: 'Enter your edited message',
+           ),
+         ),
+         actions: [
+           TextButton(
+             onPressed: () => Navigator.pop(context),
+             child: const Text('Cancel'),
+           ),
+           FilledButton(
+             onPressed: () {
+               final editedText = controller.text.trim();
+               if (editedText.isNotEmpty) {
+                 Navigator.pop(context, editedText);
+               }
+             },
+             child: const Text('Save'),
+           ),
+         ],
+       ),
+     );
+
+     if (result != null && mounted) {
+       // Update the message in the database
+       await AppDatabase.instance.updateMessageField(
+         message.id,
+         content: result,
+       );
+       // Refresh the UI
+       await _reload(scrollToBottom: false);
+     }
+   }
+
+   Future<void> _confirmRestart() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1361,10 +1431,15 @@ class _CompanionsTab extends StatelessWidget {
       itemBuilder: (context, i) {
         final n = npcs[i];
         return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: gradientColorFor(n.name).withValues(alpha: 0.4),
-            child: Text(n.name.isEmpty ? '?' : n.name[0].toUpperCase()),
-          ),
+          leading: n.image != null && n.image!.isNotEmpty
+              ? CircleAvatar(
+                  backgroundImage: FileImage(File(n.image!)),
+                  radius: 20,
+                )
+              : CircleAvatar(
+                  backgroundColor: gradientColorFor(n.name).withValues(alpha: 0.4),
+                  child: Text(n.name.isEmpty ? '?' : n.name[0].toUpperCase()),
+                ),
           title: Text(n.name, style: const TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Text([
             n.relationshipLabel,

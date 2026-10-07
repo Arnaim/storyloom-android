@@ -15,7 +15,7 @@ class AppTheme {
   static const _bgDark = Color(0xFF0C0A0F); // ink
   static const _bgLight = Color(0xFFFAF5EC); // parchment
   static const _surfaceDark = Color(0xFF171320); // warm plum
-  static const _surfaceLight = Color(0xFFFFFFFF);
+  static const _surfaceLight = Color(0xFFFFF8F0); // warm parchment surface
 
   static const _secondary = Color(0xFF8B6F4A); // aged leather
   static const _tertiary = Color(0xFFB85A44); // ember / rust

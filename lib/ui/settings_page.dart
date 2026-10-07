@@ -16,6 +16,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late AppSettings _draft;
   late final TextEditingController _keyController;
+  late final TextEditingController _modelController;
   bool _testing = false;
   String? _testResult;
   bool _saving = false;
@@ -26,11 +27,13 @@ class _SettingsPageState extends State<SettingsPage> {
     final app = context.read<AppState>();
     _draft = _clone(app.settings);
     _keyController = TextEditingController(text: _draft.apiKey);
+    _modelController = TextEditingController(text: _draft.model);
   }
 
   @override
   void dispose() {
     _keyController.dispose();
+    _modelController.dispose();
     super.dispose();
   }
 
@@ -48,6 +51,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _set(void Function(AppSettings) mutate) {
     setState(() => mutate(_draft));
+  }
+
+  bool _isKnownModel(String model) {
+    if (_draft.providerType == 'gemini') {
+      return supportedGeminiModels.contains(model);
+    } else if (_draft.providerType == 'openrouter') {
+      return supportedOpenRouterModels.contains(model);
+    }
+    return false;
   }
 
   Future<void> _save() async {
@@ -163,11 +175,40 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: TextField(
+                child: DropdownButtonFormField<String>(
+                  initialValue: _isKnownModel(_draft.model) ? _draft.model : null,
+                  isExpanded: true,
                   decoration: const InputDecoration(
-                    labelText: 'Model ID',
-                    hintText:
-                        'e.g. gemini-3.5-flash, openrouter/gemma-4-31b-it:free, llama3.2:latest',
+                    labelText: 'Model',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    if (_draft.providerType == 'gemini')
+                      for (final m in supportedGeminiModels)
+                        DropdownMenuItem(value: m, child: Text(m))
+                    else if (_draft.providerType == 'openrouter')
+                      for (final m in supportedOpenRouterModels)
+                        DropdownMenuItem(value: m, child: Text(m))
+                    else
+                      const DropdownMenuItem(
+                          value: null,
+                          child: Text('Custom provider — type below')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      _set((s) => s.model = v);
+                      _modelController.text = v;
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: TextField(
+                  controller: _modelController,
+                  decoration: const InputDecoration(
+                    labelText: 'Model ID (or custom)',
+                    hintText: 'e.g. gemini-3.5-flash, openrouter/llama-3.3-70b-versatile',
                   ),
                   onChanged: (v) => _set((s) => s.model = v.trim()),
                 ),

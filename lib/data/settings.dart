@@ -128,6 +128,10 @@ const supportedGeminiModels = [
 
 const supportedOpenRouterModels = [
   'openrouter/free',
+  'openrouter/llama-3.3-70b-versatile',
+  'openrouter/deepseek-r1-distill-llama-70b',
+  'openrouter/deepseek-chat',
+  'openrouter/deepseek-flash',
   'google/gemma-4-31b-it:free',
   'google/gemma-4-26b-a4b-it:free',
   'nvidia/nemotron-3-ultra-550b-a55b:free',

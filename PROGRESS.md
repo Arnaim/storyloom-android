@@ -1,6 +1,68 @@
 # Storyloom Android — Progress & Handoff Notes
 
-> Session ledger so any future session can pick up fast. Last updated: 2026-10-06 (Phase 1 + Phase 2 + Phase 3 done; Phase 4 next).
+> Session ledger so any future session can pick up fast. Last updated: 2026-10-07 (Phase 4 — Content & Prompt DONE).
+
+## Session 8 (2026-10-07): Phase 4 — Content & Prompt (DONE)
+
+**What:** Implemented Phase 4 of the feature expansion plan: story content updates and prompt engineering improvements.
+
+**Changes:**
+- `lib/data/seed_scenarios.dart` — "My Bullies Got Isekaied Too!" scenario updated:
+  - Updated Riko's profile to show she carries guilt and seeks redemption, with moments of genuine remorse masked by bravado
+  - Updated Rei's profile to show quiet guilt and introspection replacing her former detachment
+  - Updated Akane's profile to show her composure is strained by guilt and hesitant attempts to make things right
+  - Updated Kana's profile to show her fierceness channeled into protection rather than aggression, anger replaced by atonement
+  - Updated Yui's profile to show she's cautious and wary, hoping the change is real but afraid to hope too hard
+  - Updated rules section to emphasize character growth, maturity, guilt, redemption, and the potential for change rather than staying stuck in high school dynamics
+- All existing tests pass (`flutter test`)
+
+## Session 7 (2026-10-07): Phase 3 — UI Enhancements (DONE)
+## Session 6 (2026-10-07): Phase 2 — Settings & Theming (DONE)
+
+**What:** Implemented Phase 2 of the feature expansion plan: settings UI improvements and theme refinement.
+
+**Changes:**
+- `lib/data/settings.dart`: Updated `supportedOpenRouterModels` to include requested free models:
+  - `openrouter/llama-3.3-70b-versatile`
+  - `openrouter/deepseek-r1-distill-llama-70b`
+  - `openrouter/deepseek-chat`
+  - `openrouter/deepseek-flash`
+- `lib/ui/settings_page.dart`: 
+  - Replaced Model ID TextField with a DropdownButtonFormField showing known models from selected provider type
+  - Added "Custom provider — type below" option for manual model entry
+  - Added _isKnownModel helper method and _modelController for state management
+  - Improved UI with proper labels and hints for model selection
+- `lib/ui/theme.dart`: 
+  - Refined light theme palette to be more "Talkie-style" warm parchment
+  - Updated `_surfaceLight` from `0xFFFFFFFF` to `0xFFFFF8F0` (warm parchment surface)
+  - Maintained existing warm palette: seed `#C8956C` (burnished bronze), `_bgDark` `#0C0A0F` (ink), `_bgLight` `#FAF5EC` (parchment)
+- All existing tests pass (`flutter test`)
+
+## Session 5 (2026-10-07): Phase 1 — Database & Data Layer (DONE)
+## Session 4 (2026-10-06): Scenario library expansion (Phase 3 — DONE)
+
+**What:** Implemented Phase 2 of the feature expansion plan: settings UI improvements and theme refinement.
+
+**Changes:**
+- `lib/data/settings.dart`: Updated `supportedOpenRouterModels` to include requested free models:
+  - `openrouter/llama-3.3-70b-versatile`
+  - `openrouter/deepseek-r1-distill-llama-70b`
+  - `openrouter/deepseek-chat`
+  - `openrouter/deepseek-flash`
+- `lib/ui/settings_page.dart`: 
+  - Replaced Model ID TextField with a DropdownButtonFormField showing known models from selected provider type
+  - Added "Custom provider — type below" option for manual model entry
+  - Added _isKnownModel helper method and _modelController for state management
+  - Improved UI with proper labels and hints for model selection
+- `lib/ui/theme.dart`: 
+  - Refined light theme palette to be more "Talkie-style" warm parchment
+  - Updated `_surfaceLight` from `0xFFFFFFFF` to `0xFFFFF8F0` (warm parchment surface)
+  - Maintained existing warm palette: seed `#C8956C` (burnished bronze), `_bgDark` `#0C0A0F` (ink), `_bgLight` `#FAF5EC` (parchment)
+- All existing tests pass (`flutter test`)
+
+**Still pending:** Phase 3 (UI Enhancements), Phase 4 (Content & Prompt), Phase 5 (Verification & Polish).
+
+## Session 5 (2026-10-07): Phase 1 — Database & Data Layer (DONE)
 
 ## Session 4 (2026-10-06): Scenario library expansion (Phase 3 — DONE)
 

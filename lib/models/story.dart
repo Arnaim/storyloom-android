@@ -119,6 +119,7 @@ class Story {
     this.updatedAt = 0,
     this.lastPlayedAt = 0,
     this.coverArt,
+    this.backgroundArt,
   });
 
   final int id;
@@ -133,6 +134,7 @@ class Story {
   final int updatedAt;
   final int lastPlayedAt;
   final String? coverArt;
+  final String? backgroundArt;
 
   Story copyWith({
     String? title,
@@ -143,6 +145,7 @@ class Story {
     int? updatedAt,
     int? lastPlayedAt,
     String? coverArt,
+    String? backgroundArt,
   }) =>
       Story(
         id: id,
@@ -157,6 +160,7 @@ class Story {
         updatedAt: updatedAt ?? this.updatedAt,
         lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
         coverArt: coverArt ?? this.coverArt,
+        backgroundArt: backgroundArt ?? this.backgroundArt,
       );
 }
 
@@ -170,6 +174,7 @@ class StoryNPC {
     this.emotionalState = '',
     this.status = 'alive',
     this.location = '',
+    this.image,
   });
 
   final int id;
@@ -180,6 +185,7 @@ class StoryNPC {
   final String emotionalState;
   final String status;
   final String location;
+  final String? image;
 
   String get relationshipLabel {
     final v = relationshipValue;
@@ -199,6 +205,7 @@ class StoryNPC {
         'emotional_state': emotionalState,
         'status': status,
         'location': location,
+        'image': image,
       };
 
   factory StoryNPC.fromJson(Map<String, dynamic> j) => StoryNPC(
@@ -210,6 +217,7 @@ class StoryNPC {
         emotionalState: (j['emotional_state'] as String?) ?? '',
         status: (j['status'] as String?) ?? 'alive',
         location: (j['location'] as String?) ?? '',
+        image: (j['image'] as String?),
       );
 }
 
