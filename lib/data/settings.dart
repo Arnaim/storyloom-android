@@ -118,46 +118,34 @@ class SettingsStore {
 
 const supportedGeminiModels = [
   'gemini-3.8-flash',
-  'gemini-3.8-flash-lite',
-  'gemini-3.7-flash',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
-  'gemini-3.1-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash',
+  'gemini-3.6-flash',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
 ];
 
 const supportedOpenRouterModels = [
   'openrouter/free',
-  'openrouter/llama-3.3-70b-versatile',
-  'openrouter/deepseek-r1-distill-llama-70b',
-  'openrouter/deepseek-chat',
-  'openrouter/deepseek-flash',
-  'google/gemma-4-31b-it:free',
-  'google/gemma-4-26b-a4b-it:free',
-  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'qwen/qwen3.8-27b',
+  'nvidia/nemotron-3-ultra:free',
   'nvidia/nemotron-3.5-lightning:free',
-  'nvidia/nemotron-3-super-120b-a12b:free',
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-  'liquid/lfm-2.5-2.6b:free',
-  'cohere/north-mini-code:free',
-  'poolside/laguna-s-2.1:free',
-  'thinkingmachines/inkling:free',
-  'apodex/apodex-1.1-mini:free',
-  'qwen/qwen3.8-27b:free',
+  'nvidia/nemotron-3-super:free',
+  'thinking-machines/inkling:free',
+  'thinking-machines/inkling-small:free',
+  'inclusionai/ling-3.1-flash:free',
 ];
 
 const supportedGroqModels = [
-  'gpt-oss-120b',
   'llama-3.3-70b-versatile',
+  'llama-3.2-90b-vision-preview',
+  'llama-3.2-11b-vision-preview',
+  'llama-3.2-3b-preview',
+  'llama-3.2-1b-preview',
   'llama-3.1-8b-instant',
   'llama-3.1-70b-versatile',
-  'mixtral-8x7b-32768',
   'gemma2-9b-it',
+  'mixtral-8x7b-32768',
 ];
 
 const supportedDeepseekModels = [

@@ -525,6 +525,73 @@ class GeminiService {
   }
 }
 
+/// Fetches available models from the configured provider's API.
+/// Returns a list of model IDs, or throws on error.
+Future<List<String>> fetchModels(AppSettings settings) async {
+  final key = settings.apiKey.trim();
+  if (key.isEmpty) {
+    throw const AiException('API key required to fetch models.', retryable: false);
+  }
+
+  String url;
+  Map<String, String> headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $key',
+  };
+
+  switch (settings.providerType) {
+    case 'groq':
+      url = 'https://api.groq.com/openai/v1/models';
+      break;
+    case 'openrouter':
+      url = 'https://openrouter.ai/api/v1/models';
+      headers['HTTP-Referer'] = 'https://storyloom.app';
+      headers['X-Title'] = 'Storyloom';
+      break;
+    case 'deepseek':
+      url = 'https://api.deepseek.com/v1/models';
+      break;
+    case 'custom':
+      if (settings.apiBaseUrl.trim().isEmpty) {
+        throw const AiException('Custom base URL required.', retryable: false);
+      }
+      var base = settings.apiBaseUrl.trim();
+      if (base.endsWith('/')) base = base.substring(0, base.length - 1);
+      url = '$base/models';
+      break;
+    default:
+      throw const AiException('Model fetching not supported for this provider.', retryable: false);
+  }
+
+  final response = await http.Client().get(Uri.parse(url), headers: headers).timeout(
+    const Duration(seconds: 15),
+    onTimeout: () => throw const AiException('Request timed out.', retryable: true),
+  );
+
+  if (response.statusCode != 200) {
+    final errorBody = response.body;
+    String msg;
+    try {
+      final errorJson = jsonDecode(errorBody) as Map<String, dynamic>;
+      final error = errorJson['error'] as Map<String, dynamic>?;
+      msg = error?['message'] as String? ?? 'Failed to fetch models (${response.statusCode})';
+    } catch (_) {
+      msg = 'Failed to fetch models (${response.statusCode}): $errorBody';
+    }
+    throw AiException(msg, retryable: response.statusCode == 429);
+  }
+
+  final data = jsonDecode(response.body) as Map<String, dynamic>;
+  final List<dynamic> models = data['data'] as List? ?? [];
+
+  return models
+      .whereType<Map<String, dynamic>>()
+      .map((m) => m['id'] as String?)
+      .whereType<String>()
+      .where((id) => id.isNotEmpty)
+      .toList();
+}
+
 class AiException implements Exception {
   const AiException(this.message, {this.retryable = false});
   final String message;

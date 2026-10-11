@@ -24,6 +24,9 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _testing = false;
   String? _testResult;
   bool _saving = false;
+  bool _fetchingModels = false;
+  List<String> _fetchedModels = [];
+  String? _fetchError;
 
   @override
   void initState() {
@@ -107,6 +110,49 @@ class _SettingsPageState extends State<SettingsPage> {
     } finally {
       if (mounted) setState(() => _testing = false);
     }
+  }
+
+  Future<void> _fetchModels() async {
+    if (_draft.apiKey.trim().isEmpty) {
+      setState(() => _fetchError = 'Enter an API key first.');
+      return;
+    }
+    setState(() {
+      _fetchingModels = true;
+      _fetchError = null;
+      _fetchedModels = [];
+    });
+    try {
+      final models = await fetchModels(_draft);
+      if (!mounted) return;
+      setState(() {
+        _fetchedModels = models;
+        _fetchingModels = false;
+      });
+    } on AiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _fetchError = e.message;
+        _fetchingModels = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _fetchError = 'Failed to fetch models: $e';
+        _fetchingModels = false;
+      });
+    }
+  }
+
+  void _applyFetchedModels() {
+    if (_fetchedModels.isEmpty) return;
+    // Use the first fetched model as default
+    _set((s) => s.model = _fetchedModels.first);
+    _modelController.text = _fetchedModels.first;
+    setState(() => _fetchError = null);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Model set to ${_fetchedModels.first}. ${_fetchedModels.length} models available.')),
+    );
   }
 
   @override
@@ -283,6 +329,48 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                 ),
               ),
+              if (_draft.providerType != 'gemini' && _draft.providerType != 'custom')
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _fetchingModels ? null : _fetchModels,
+                          icon: _fetchingModels
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.download_outlined),
+                          label: Text(_fetchingModels ? 'Fetching…' : 'Fetch models from API'),
+                        ),
+                      ),
+                      if (_fetchedModels.isNotEmpty) ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _applyFetchedModels,
+                            icon: const Icon(Icons.check_circle_outline),
+                            label: Text('Use fetched (${_fetchedModels.length})'),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              if (_fetchError != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Text(
+                    _fetchError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ),
             ],
           ),
           _section(
