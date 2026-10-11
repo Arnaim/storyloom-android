@@ -230,7 +230,7 @@ class AppDatabase {
         'seed_version': s.seedVersion,
       };
 
-  static const _currentSeedVersion = 1;
+  static const _currentSeedVersion = 2;
 
   Future<void> seedIfEmpty() async {
     final db = await instance.db;

@@ -162,6 +162,22 @@ class Story {
         coverArt: coverArt ?? this.coverArt,
         backgroundArt: backgroundArt ?? this.backgroundArt,
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'scenario_id': scenarioId,
+        'character': character?.toJson() ?? {},
+        'status': status,
+        'turn_count': turnCount,
+        'last_message_seq': lastMessageSeq,
+        'current_state': currentState,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
+        'last_played_at': lastPlayedAt,
+        'cover_art': coverArt,
+        'background_art': backgroundArt,
+      };
 }
 
 class StoryNPC {

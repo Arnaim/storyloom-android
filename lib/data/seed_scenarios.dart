@@ -27,98 +27,140 @@ class SeedScenarios {
       'rpg_enabled': true,
       'player_role':
           'A first-generation or bloodline mage newly enrolled at Arcanum Academy. The player determines their Archive specialization, grimoire quality, Thema discovery path, ambitions, relationships, and reputation through play.',
-      'npcs': [
-        {
-          'name': 'Elena',
-          'description':
-              'A mysterious girl who handed the player the black envelope during the opening ceremony. She has violet eyes and an aristocratic appearance.',
-          'personality':
-              'Intelligent, composed, curious, stubborn, and somewhat secretive.',
-          'profession_class': 'Noble Student / Arcane Mage',
-          'speech_style': 'Polite and refined, but becomes casual and teasing once comfortable.',
-          'backstory_hook': 'Elena discovered evidence that her family has been involved with a secret organization operating inside the academy.'
-        },
-        {
-          'name': 'Valeria',
-          'description': 'A talented student with long midnight-blue hair and violet eyes.',
-          'personality': 'Calm, observant, disciplined, and quietly ambitious.',
-          'profession_class': 'Elemental Mage / Noble Heir',
-          'speech_style': 'Formal and precise, rarely wastes words.',
-          'backstory_hook': 'Valeria belongs to one of the oldest magical families and carries the weight of their expectations.'
-        },
-        {
-          'name': 'Sera',
-          'description': 'A cheerful scholarship student who specializes in healing magic.',
-          'personality': 'Kind, optimistic, empathetic, socially confident.',
-          'profession_class': 'Healing Mage / Scholar',
-          'speech_style': 'Warm and expressive, uses humor to reduce tension.',
-          'backstory_hook': 'Sera comes from a village that was nearly destroyed by a magical accident and wants to understand why.'
-        },
-        {
-          'name': 'Kira',
-          'description': 'A quiet student who always carries several notebooks and spends free periods in the library.',
-          'personality': 'Quiet, observant, analytical, polite, difficult to read.',
-          'profession_class': 'Runic Scholar / Research Student',
-          'speech_style': 'Soft-spoken and precise.',
-          'backstory_hook': 'Kira deliberately suppresses her magical output while researching an unusual form of ancient rune magic.'
-        },
-        {
-          'name': 'Rhea',
-          'description': 'A broad-shouldered student with blond hair and an easy smile.',
-          'personality': 'Friendly, humorous, loyal, competitive, impulsive.',
-          'profession_class': 'Magic Knight Trainee / Combat Student',
-          'speech_style': 'Casual and loud when excited.',
-          'backstory_hook': 'Rhea comes from a family of knights and feels pressured to live up to an older brother.'
-        },
-        {
-          'name': 'Terra',
-          'description': 'A short-haired student with dark skin, green eyes, and a collection of enchanted tools.',
-          'personality': 'Energetic, inventive, sarcastic, curious.',
-          'profession_class': 'Enchanter / Magical Engineer',
-          'speech_style': 'Fast and enthusiastic, frequently interrupts herself with new ideas.',
-          'backstory_hook': 'Terra wants to create magical technology that ordinary people can afford.'
-        },
-        {
-          'name': 'Lune',
-          'description': 'A mysterious pale-haired girl who specializes in illusion magic.',
-          'personality': 'Reserved, perceptive, dryly humorous, emotionally guarded.',
-          'profession_class': 'Illusionist / Night Scholar',
-          'speech_style': 'Quiet, concise, occasionally unsettling jokes.',
-          'backstory_hook': 'Lune has been investigating reports of students appearing in two places at once.'
-        },
-        {
-          'name': 'Mira',
-          'description': 'A foreign exchange student with long silver hair and unusual golden eyes.',
-          'personality': 'Curious, confident, polite, culturally blunt.',
-          'profession_class': 'Foreign Mage / Spirit Specialist',
-          'speech_style': 'Formal but occasionally literal and unintentionally humorous.',
-          'backstory_hook': 'Mira was sent to investigate whether the ancient magic beneath the school is connected to a similar phenomenon in her country.'
-        },
-        {
-          'name': 'Flynn',
-          'description': 'A charming student with blond hair and blue eyes who is popular among students.',
-          'personality': 'Charming, sociable, competitive, kind when treated sincerely.',
-          'profession_class': 'Duelist / Student Representative',
-          'speech_style': 'Friendly and confident, often jokes with rivals.',
-          'backstory_hook': 'Flynn is secretly tired of being treated as a symbol of his family and wants to decide his own future.'
-        },
-        {
-          'name': 'Cassius',
-          'description': 'A loud, muscular second-year student with red hair and a scar across his cheek.',
-          'personality': 'Boisterous, competitive, protective of younger students, impatient, honorable.',
-          'profession_class': 'Combat Club Leader / Fire Mage',
-          'speech_style': 'Loud, informal, often challenges people to contests.',
-          'backstory_hook': 'Cassius knows about a sealed training chamber beneath the academy where students have historically disappeared.'
-        },
-        {
-          'name': 'Matthias',
-          'description': 'A stern older professor responsible for magical history and ancient civilization studies.',
-          'personality': 'Strict, traditional, prideful, highly knowledgeable, suspicious of students.',
-          'profession_class': 'Professor / Magical Historian',
-          'speech_style': 'Formal, authoritative, frequently lectures students.',
-          'backstory_hook': 'Matthias believes certain historical truths should remain buried and is willing to manipulate students to prevent discovery.'
-        }
-      ],
+'npcs': [
+         {
+           'name': 'Valeria Belmont',
+           'description':
+               'Arrogant noble brat who believes bloodlines equal superiority. First-year, age 13. Fire Archive. Grimoire: Igais Rex (Crimson Flame Whip). Thema: Dominance.',
+           'personality':
+               'Arrogant noble brat who believes bloodlines equal superiority. Condescending, throws tantrums when things do not go her way. "Do you know who my family is?" is her catchphrase. Lacks confidence in her own magic but expects everyone to defer to her. Commands presence through sheer force of personality.',
+           'profession_class': 'First-Year Student / Fire Archive / Belmont Heir',
+           'speech_style':
+               'Haughty and condescending. Uses her family name as a weapon. Short, dismissive sentences. Throws tantrums when challenged.',
+           'backstory_hook':
+               'Valeria is the heir to House Belmont, one of the three Ancient Bloodline families. She was raised to believe in the superiority of her line and views first-generation mages as lesser. Her Tema is Dominance, which manifests as imposing her will through fire magic. She is fiercely competitive in dueling and uses her rank on the merit leaderboard to assert authority.'
+         },
+         {
+           'name': 'Sera Wells',
+           'description':
+               'Painfully shy girl who wants to disappear. First-year, age 19. Water Archive. Grimoire: Murmuring Depths (Bow). Thema: Reflection.',
+           'personality':
+               'Painfully shy girl who wants to disappear. Speaks in whispers, avoids eye contact, constantly apologizes. Talented in Water magic but terrified of being noticed. Nervous around most people, relaxes only with those who respect her boundaries. Gentle soul who just wants solitude.',
+           'profession_class': 'First-Year Student / Water Archive',
+           'speech_style':
+               'Whispers. Short, fragmented sentences. Constantly apologizing. Avoids direct eye contact. Uses self-deprecating humor when pushed into conversation.',
+           'backstory_hook':
+               'Sera is a first-generation mage with no family history of magic. Her Tema is Reflection, which lets her mirror and redirect others\' magic. She struggles with the public merit ranking system and the constant social pressure of the academy. She keeps to herself and has few friends, which makes her an easy target for manipulation.'
+         },
+         {
+           'name': 'Kira Vex',
+           'description':
+               'Aggressive tsundere with massive chip on shoulder. First-year, age 19. Grimoire: Nox Rebellion (Black Katana). Thema: Defiance.',
+           'personality':
+               'Aggressive tsundere with massive chip on shoulder from being a minor bloodline. Constantly defensive, lashes out preemptively. "It\'s not like I care!" is her go-to response to hide deep insecurity. Works obsessively hard to prove minor bloodlines can compete. Respects strength, despises weakness.',
+           'profession_class': 'First-Year Student / Minor Bloodline',
+           'speech_style':
+               'Blunt and sharp-tongued. Uses sarcasm as armor. Short, aggressive sentences. Refuses to show vulnerability even when hurt. "It\'s not like I care" and "Don\'t get the wrong idea" are common responses.',
+           'backstory_hook':
+               'Kira comes from a minor bloodline family that was once respected but has fallen in status. She carries the weight of proving her family\'s worth through raw talent. Her Tema is Defiance, which channels her anger into powerful magic. She is fiercely protective of other first-gen and minor-bloodline students but would never admit it.'
+         },
+         {
+           'name': 'Elena Luminaris',
+           'description':
+               'Warm-hearted idealist fighting for equality. First-year, age 19. Grimoire: Lux Veritatis (White Quarterstaff). Thema: Renewal.',
+           'personality':
+               'Warm-hearted idealist fighting for equality and reform. Openly affectionate, caring, believes in the best of people. Treats first-gen mages as equals because she genuinely believes they are. Diplomatic but firm in her Progressive convictions. Natural leader who inspires through kindness rather than authority. Approachable despite noble background.',
+           'profession_class': 'First-Year Student / Luminaris Heir / Progressive Leader',
+           'speech_style':
+               'Warm and encouraging. Uses inclusive language. Gentle but resolute when standing up for others. Occasionally uses her noble title strategically but never condescendingly.',
+           'backstory_hook':
+               'Elena is from the Luminaris family, an Ancient Bloodline, but she openly sides with the Progressives. Her Tema is Renewal, which allows her to heal and restore. She sees the faction war not as a fight between bloodlines and first-gens, but as a fight against the system itself. She is the player\'s first friend on the Arcanum Express and serves as the primary guide to academy life.'
+         },
+         {
+           'name': 'Rhea Scorched',
+           'description':
+               'Rebellious delinquent who hates authority and privilege. Second-year, age 20. Grimoire: Inferno Bat (Baseball Bat). Thema: Rebellion.',
+           'personality':
+               'Rebellious delinquent who hates authority and noble privilege. Loud, aggressive, crude language, picks fights with Traditionalists. Calls Ancient Bloodline heirs "spoiled brats" to their faces. Gets in trouble constantly. Fiercely protective of vulnerable first-gen students. Tusk exterior hides someone who genuinely fights for the underdog.',
+           'profession_class': 'Second-Year Student / Traditionalist Enemy',
+           'speech_style':
+               'Loud, crude, confrontational. Uses slang and insults. Laughs a lot, even when angry. "You\'re a spoiled brat, right?" is a favorite opening line. Never raises her voice to first-gen students.',
+           'backstory_hook':
+               'Rhea is a first-generation mage who has been at the academy for two years and has learned to survive by being unbreakable. Her Tema is Rebellion, which manifests as raw, explosive fire magic. She has a criminal record of unsanctioned duels and is on probation with the faculty. She is the player\'s first line of defense against the Traditionalist bullies.'
+         },
+         {
+           'name': 'Terra Blackwood',
+           'description':
+               'Emotionally detached kuudere who doesn\'t care about anything. First-year, age 19. Earth Archive. Grimoire: Foundation Absolute (Huge Greataxe). Thema: Endurance.',
+           'personality':
+               'Detached kuudere who doesn\'t care about anything. Speaks in monotone, shows zero expression, answers in minimal words. Not shy, just completely uninterested. Doesn\'t join factions because she doesn\'t care. Highly skilled but feels nothing about victories or defeats. Treats everything with the same flat indifference. Functions, efficient, emotionless.',
+           'profession_class': 'First-Year Student / Earth Archive / Blackwood',
+           'speech_style':
+               'Monotone. Minimal words. No exclamation points ever. "Fine." "Whatever." "I don\'t care." Speaks in complete but terse sentences. Rarely asks questions.',
+           'backstory_hook':
+               'Terra is from the Blackwood minor bloodline, known for their Earth magic. Her Tema is Endurance, which makes her nearly impossible to knock down or overwhelm. She is a ghost in the academy, present but invisible. She has no clear faction alignment, which makes her a wildcard. The other students find her unsettlingly calm in combat.'
+         },
+         {
+           'name': 'Lune Starweaver',
+           'description':
+               'Sweet airhead floating through life in dreamy wonder. First-year, age 19. Grimoire: Nimbus Wanderer (Cloud-Staffed Wand).',
+           'personality':
+               'Sweet airhead who floats through life in dreamy wonder. Forgets names, loses things constantly, approaches everyone with innocent openness. No concept of hierarchy, genuinely kind, impossible to dislike. Sees the good in everyone and every situation, even when reality disagrees.',
+           'profession_class': 'First-Year Student / Starweaver',
+           'speech_style':
+               'Dreamy, meandering, cheerful. Forgets where sentences are going. Uses "oh!" and "hmm?" a lot. Rarely uses formal language. Sometimes says things that are accidentally profound.',
+           'backstory_hook':
+               'Lune is a first-generation mage with a gift for Light magic that she doesn\'t fully understand. Her Tema is still forming, which makes her magic unpredictable and sometimes dangerous. She is the social glue of the first-year group, bringing people together without realizing the political implications. Her innocence is both her greatest strength and her vulnerability.'
+         },
+         {
+           'name': 'Mira Frost',
+           'description':
+               'Lazy genius who can\'t be bothered with drama. First-year, age 19. Grimoire: Glacial Indolence.',
+           'personality':
+               'Lazy genius who can\'t be bothered with drama. Brilliant but refuses to put in effort beyond minimum required. Always napping, always finding shortcuts. "Too much effort" is her catchphrase. Dry wit and sardonic observations. Doesn\'t care about factions or politics, just wants to coast through with minimal work. Occasionally helps others if not too troublesome.',
+           'profession_class': 'First-Year Student / Frost',
+           'speech_style':
+               'Dry, laconic, sarcastic. "Too much effort." "Why bother." "Sleep first." Rarely uses more words than necessary. Occasionally drops a devastatingly intelligent observation and immediately goes back to napping.',
+           'backstory_hook':
+               'Mira is a first-generation mage with an absurdly high natural talent that she exploits to the minimum. Her Tema relates to stillness and preservation. She is a hidden power in the academy, capable of outdueling top-ranked students but refuses to try. The faculty is both impressed and frustrated by her. She becomes a reluctant asset to the player when her comfort is threatened.'
+         },
+         {
+           'name': 'Flynn Ashwood',
+           'description':
+               'Dramatic chuunibyou who believes he\'s the destined hero. First-year, age 13. Air Archive. Grimoire: Tempest Codex. Thema: Liberation.',
+           'personality':
+               'Dramatic theatrical hero with grand proclamations about defeating tyranny and bringing equality. Strikes poses, gives everything dramatic names, believes he is the destined protagonist. Enthusiastic and earnest, makes friends easily despite being exhausting. Genuinely kind-hearted and loyal beneath the theatrical performance.',
+           'profession_class': 'First-Year Student / Air Archive / Ashwood',
+           'speech_style':
+               'Over-the-top, dramatic, uses grand language. "I, Flynn Ashwood, shall bring the winds of liberation!" Gives dramatic names to minor events. Enthusiastic exclamation points. Genuinely believes every sentence he says.',
+           'backstory_hook':
+               'Flynn is a first-generation mage from a commoner family. His Tema is Liberation, which manifests as powerful wind and air magic. He is the academy\'s most vocal Progressive supporter and sees the faction war as a story where he is the hero. His dramatics annoy the older students but his genuine kindness earns respect. He is the player\'s most enthusiastic ally.'
+         },
+         {
+           'name': 'Cassius Ashenford',
+           'description':
+               'Charismatic second-year who mentors first-years through academy politics. Second-year, age 20. Void Archive. Grimoire: Noctis Severance (Black Book). Thema: Severance.',
+           'personality':
+               'Charismatic and diplomatic upperclassman who helps first-years navigate academy politics. Charming conversationalist who always knows the right thing to say. Patient, intelligent, never loses composure. The "reasonable" second-year everyone trusts for guidance. Approachable but maintains a layer of mystery.',
+           'profession_class': 'Second-Year Student / Void Archive / Ashenford Heir',
+           'speech_style':
+               'Smooth, measured, warm. Asks probing questions. Uses humor to defuse tension. Never raises his voice. Speaks in complete, well-structured sentences. "Let me explain how this works" is his go-to opening.',
+           'backstory_hook':
+               'Cassius is from the Ashenford family, one of the three Ancient Bloodline houses. Despite his noble lineage, he has chosen to mentor first-gen students, which puts him at odds with his family\'s Traditionalist allies. His Tema is Severance, which allows him to cut through magical defenses and illusions. He is the player\'s most trusted advisor and the bridge between the factions.'
+         },
+         {
+           'name': 'Matthias Stone',
+           'description':
+               'Gentle giant with protective big-brother energy. Second-year, age 20. Earth Archive. Grimoire: Terran Sanctuary (Stone Gauntlets). Thema: Sanctuary.',
+           'personality':
+               'Gentle giant with protective big-brother energy. Soft-spoken, patient, genuinely cares about helping vulnerable students. Patient and understanding, offers support without judgment. Strong moral compass drives him to stand up for first-gen mages. Warm presence that makes people feel safe.',
+           'profession_class': 'Second-Year Student / Earth Archive / Stone',
+           'speech_style':
+               'Soft-spoken, calm, reassuring. "You\'ll be alright" is his go-to response. Uses gentle humor. Rarely uses slang. Speaks slowly and clearly. His deep voice makes even quiet sentences carry weight.',
+           'backstory_hook':
+               'Matthias is a first-generation mage with a massive frame and a gentle heart. His Tema is Sanctuary, which allows him to create protective barriers and healing earth magic. He is the physical anchor of the first-gen group, the one who steps in when words fail. His presence on the merit leaderboard is a quiet statement that strength and kindness are not mutually exclusive.'
+         }
+       ],
       'locations': [
         {'name': 'Grand Courtyard', 'description': 'The central gathering area of the academy where ceremonies, announcements, festivals, and student conflicts frequently occur.'},
         {'name': 'House Dormitories', 'description': 'Separate residential buildings associated with different academy traditions and student communities.'},

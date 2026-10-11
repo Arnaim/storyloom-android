@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
+import '../data/database.dart';
 import '../data/settings.dart';
+import '../data/story_export.dart';
 import '../engine/gemini_api.dart';
+import '../models/story.dart';
 
 /// Settings: API key, model, generation sliders, memory, appearance, data.
 class SettingsPage extends StatefulWidget {
@@ -58,6 +62,10 @@ class _SettingsPageState extends State<SettingsPage> {
       return supportedGeminiModels.contains(model);
     } else if (_draft.providerType == 'openrouter') {
       return supportedOpenRouterModels.contains(model);
+    } else if (_draft.providerType == 'groq') {
+      return supportedGroqModels.contains(model);
+    } else if (_draft.providerType == 'deepseek') {
+      return supportedDeepseekModels.contains(model);
     }
     return false;
   }
@@ -111,6 +119,45 @@ class _SettingsPageState extends State<SettingsPage> {
           _section(
             'API Provider',
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: DropdownButtonFormField<String>(
+                  initialValue: supportedProviders.contains(_draft.providerType)
+                      ? _draft.providerType
+                      : 'gemini',
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Provider',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (final p in supportedProviders)
+                      DropdownMenuItem(
+                        value: p,
+                        child: Text(providerLabel(p)),
+                      ),
+                  ],
+                  onChanged: (v) {
+                    if (v == null) return;
+                    _set((s) {
+                      s.providerType = v;
+                      // Reset model to first in the new provider's list
+                      if (v == 'gemini') {
+                        s.model = supportedGeminiModels.first;
+                      } else if (v == 'openrouter') {
+                        s.model = supportedOpenRouterModels.first;
+                      } else if (v == 'groq') {
+                        s.model = supportedGroqModels.first;
+                      } else if (v == 'deepseek') {
+                        s.model = supportedDeepseekModels.first;
+                      } else {
+                        s.model = '';
+                      }
+                      _modelController.text = s.model;
+                    });
+                  },
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.key_outlined),
                 title: const Text('API key'),
@@ -189,6 +236,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     else if (_draft.providerType == 'openrouter')
                       for (final m in supportedOpenRouterModels)
                         DropdownMenuItem(value: m, child: Text(m))
+                    else if (_draft.providerType == 'groq')
+                      for (final m in supportedGroqModels)
+                        DropdownMenuItem(value: m, child: Text(m))
+                    else if (_draft.providerType == 'deepseek')
+                      for (final m in supportedDeepseekModels)
+                        DropdownMenuItem(value: m, child: Text(m))
                     else
                       const DropdownMenuItem(
                           value: null,
@@ -220,7 +273,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       ? 'Using Google Gemini — get a key at aistudio.google.com/app/apikey'
                       : _draft.providerType == 'openrouter'
                           ? 'Using OpenRouter — get a free key at openrouter.ai/keys'
-                          : 'Using Custom API — configure base URL above',
+                          : _draft.providerType == 'groq'
+                              ? 'Using Groq — get a free key at console.groq.com'
+                              : _draft.providerType == 'deepseek'
+                                  ? 'Using DeepSeek — get a key at platform.deepseek.com'
+                                  : 'Using Custom API — configure base URL above',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -299,6 +356,89 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: const Text('Dark mode'),
                 value: _draft.darkMode,
                 onChanged: (v) => _set((s) => s.darkMode = v),
+              ),
+            ],
+          ),
+          _section(
+            'Data Management',
+            children: [
+              ListTile(
+                leading: const Icon(Icons.upload_file_outlined),
+                title: const Text('Export a story'),
+                subtitle: const Text('Copy story JSON to clipboard'),
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final stories = await AppDatabase.instance.listStories();
+                  if (!mounted) return;
+                  if (stories.isEmpty) {
+                    messenger.showSnackBar(const SnackBar(content: Text('No stories to export.')));
+                    return;
+                  }
+
+                  final selected = await showDialog<Story>(
+                    context: context,
+                    builder: (ctx) => SimpleDialog(
+                      title: const Text('Select a story to export'),
+                      children: stories.map((s) => SimpleDialogOption(
+                        onPressed: () => Navigator.pop(ctx, s),
+                        child: Text(s.title),
+                      )).toList(),
+                    ),
+                  );
+                  if (selected == null) return;
+
+                  try {
+                    final json = await StoryExportService.instance.exportStoryJson(selected.id);
+                    await Clipboard.setData(ClipboardData(text: json));
+                    if (!mounted) return;
+                    messenger.showSnackBar(const SnackBar(content: Text('Copied story JSON to clipboard.')));
+                  } catch (e) {
+                    if (!mounted) return;
+                    messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.download_for_offline_outlined),
+                title: const Text('Import data'),
+                subtitle: const Text('Paste story JSON to restore'),
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final key = TextEditingController();
+                  await showDialog<void>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Import story JSON'),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        child: TextField(
+                          controller: key,
+                          decoration: const InputDecoration(hintText: 'Paste story JSON here'),
+                          maxLines: 10,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                        FilledButton(
+                          onPressed: () async {
+                            final json = key.text.trim();
+                            if (json.isEmpty) return;
+                            try {
+                              final result = await StoryExportService.instance.importFromJson(json);
+                              if (!mounted) return;
+                              messenger.showSnackBar(SnackBar(content: Text(result)));
+                              Navigator.pop(ctx);
+                            } catch (e) {
+                              if (!mounted) return;
+                              messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+                            }
+                          },
+                          child: const Text('Import'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -404,16 +544,12 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(_draft.providerType == 'gemini'
-              ? 'Google Gemini API key'
-              : _draft.providerType == 'openrouter'
-                  ? 'OpenRouter API key'
-                  : 'Custom API key'),
+          title: Text(providerLabel(_draft.providerType) + ' API key'),
           content: TextField(
             controller: key,
             obscureText: hidden,
             decoration: InputDecoration(
-              hintText: _draft.providerType == 'gemini' ? 'Paste your Gemini API key here' : _draft.providerType == 'openrouter' ? 'sk-or-...' : 'Paste your API key here',
+              hintText: providerKeyHint(_draft.providerType),
               suffixIcon: IconButton(
                 icon: Icon(hidden ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => hidden = !hidden),
@@ -430,7 +566,25 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () {
                 final v = key.text.trim();
                 _keyController.text = v;
-                _set((s) => s.apiKey = v);
+                _set((s) {
+                  s.apiKey = v;
+                  // Auto-detect provider from key prefix if not already set to that provider
+                  final detected = detectProviderFromKey(v);
+                  if (detected != null && detected != s.providerType) {
+                    s.providerType = detected;
+                    // Reset model to default for the detected provider
+                    if (detected == 'gemini') {
+                      s.model = supportedGeminiModels.first;
+                    } else if (detected == 'openrouter') {
+                      s.model = supportedOpenRouterModels.first;
+                    } else if (detected == 'groq') {
+                      s.model = supportedGroqModels.first;
+                    } else if (detected == 'deepseek') {
+                      s.model = supportedDeepseekModels.first;
+                    }
+                    _modelController.text = s.model;
+                  }
+                });
                 setState(() => _testResult = null);
                 Navigator.pop(context);
               },

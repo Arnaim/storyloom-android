@@ -72,6 +72,11 @@ class SettingsStore {
       settings.providerType = 'openrouter';
     }
 
+    // Default unknown provider types to Gemini
+    if (!supportedProviders.contains(settings.providerType)) {
+      settings.providerType = 'gemini';
+    }
+
     return settings;
   }
 
@@ -143,7 +148,97 @@ const supportedOpenRouterModels = [
   'poolside/laguna-s-2.1:free',
   'thinkingmachines/inkling:free',
   'apodex/apodex-1.1-mini:free',
+  'qwen/qwen3.8-27b:free',
 ];
+
+const supportedGroqModels = [
+  'gpt-oss-120b',
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+  'llama-3.1-70b-versatile',
+  'mixtral-8x7b-32768',
+  'gemma2-9b-it',
+];
+
+const supportedDeepseekModels = [
+  'deepseek-chat',
+  'deepseek-reasoner',
+  'deepseek-coder',
+];
+
+/// Returns the default API base URL for a given provider type.
+/// Empty for Gemini (uses the SDK directly).
+String providerBaseUrl(String providerType) {
+  switch (providerType) {
+    case 'openrouter':
+      return 'https://openrouter.ai/api/v1';
+    case 'groq':
+      return 'https://api.groq.com/openai/v1';
+    case 'deepseek':
+      return 'https://api.deepseek.com/v1';
+    case 'custom':
+      return ''; // user-entered
+    default:
+      return '';
+  }
+}
+
+/// Returns a hint string for where to get an API key for the provider.
+String providerKeyHint(String providerType) {
+  switch (providerType) {
+    case 'gemini':
+      return 'Paste your Gemini API key here';
+    case 'openrouter':
+      return 'sk-or-...';
+    case 'groq':
+      return 'gsk_...';
+    case 'deepseek':
+      return 'sk-...';
+    case 'custom':
+      return 'Paste your API key here';
+    default:
+      return 'Paste your API key here';
+  }
+}
+
+/// Human-readable provider label.
+String providerLabel(String providerType) {
+  switch (providerType) {
+    case 'gemini':
+      return 'Google Gemini';
+    case 'openrouter':
+      return 'OpenRouter';
+    case 'groq':
+      return 'Groq';
+    case 'deepseek':
+      return 'DeepSeek';
+    case 'custom':
+      return 'Custom API';
+    default:
+      return providerType;
+  }
+}
+
+/// All selectable provider types.
+const supportedProviders = [
+  'gemini',
+  'openrouter',
+  'groq',
+  'deepseek',
+  'custom',
+];
+
+/// Detects provider type from API key prefix.
+/// Returns null if unrecognizable.
+String? detectProviderFromKey(String key) {
+  final k = key.trim();
+  if (k.isEmpty) return null;
+  if (k.startsWith('gsk_')) return 'groq';
+  if (k.startsWith('sk-or-')) return 'openrouter';
+  if (k.startsWith('sk-')) return 'deepseek';
+  if (k.startsWith('AIza') && k.length == 39) return 'gemini';
+  return null;
+}
 
 /// Returns true if the model string refers to an OpenRouter model.
 bool isOpenRouterModel(String model) =>

@@ -24,6 +24,8 @@ class GeminiService {
 
   bool get _useOpenAiFormat =>
       _settings.providerType == 'openrouter' ||
+      _settings.providerType == 'groq' ||
+      _settings.providerType == 'deepseek' ||
       _settings.providerType == 'custom' ||
       _settings.apiBaseUrl.trim().isNotEmpty ||
       isOpenRouterModel(_modelName);
@@ -32,6 +34,12 @@ class GeminiService {
     if (_settings.providerType == 'openrouter' ||
         isOpenRouterModel(_modelName)) {
       return 'https://openrouter.ai/api/v1/chat/completions';
+    }
+    if (_settings.providerType == 'groq') {
+      return 'https://api.groq.com/openai/v1/chat/completions';
+    }
+    if (_settings.providerType == 'deepseek') {
+      return 'https://api.deepseek.com/v1/chat/completions';
     }
     var url = _settings.apiBaseUrl.trim();
     if (url.isEmpty) return 'https://openrouter.ai/api/v1/chat/completions';
@@ -45,6 +53,7 @@ class GeminiService {
         isOpenRouterModel(_modelName)) {
       return openRouterModelId(_modelName);
     }
+    // Groq and DeepSeek use plain model IDs (no prefix stripping)
     return _settings.model.trim();
   }
 
