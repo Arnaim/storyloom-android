@@ -831,161 +831,159 @@ class SeedScenarios {
     {
       'title': 'The Extra in the Villainess Story',
       'description':
-          'You awaken inside a romance novel you recognize immediately. The world, characters, rivalries, and major events are all familiar to you. The problem is that you are not the protagonist, the prince, the heroine, or even a major character. You are an insignificant young man whose name barely appeared in the original story.',
+          'You wake up as a background character in a romance novel you once read. Not the heroine. Not the prince. Not even a named supporting role. Just a minor noble whose existence served as a single line of dialogue in Chapter Four. The problem: the "villainess" you were meant to mock from the sidelines is about to do something the novel said she would never do — and the story is already deviating from every page you remember.',
       'genre': 'Otome Fantasy / Academy / Political Drama / Romance / Mystery',
       'tags': [
         'otome', 'villainess', 'academy', 'nobility', 'politics',
         'romance', 'mystery', 'mob protagonist', 'alternate timeline',
-        'magic', 'social hierarchy', 'original plot'
+        'magic', 'social hierarchy', 'original plot', 'character agency'
       ],
       'premise':
-          'The player awakens as a minor male character inside a fantasy romance story they remember from Earth. The story originally followed a commoner heroine entering a prestigious magical academy and becoming involved with several powerful young nobles, including the crown prince. One of those nobles was the infamous villainess\'s fiancé. In the original plot, the villainess eventually becomes obsessed with the heroine, publicly humiliates her during the academy\'s graduation ceremony, and is ultimately ruined. The player, however, is not one of the important characters. He is merely the son of a minor noble family whose name appeared a handful of times in the original story. Because he remembers the original timeline, he knows major events that are supposed to happen. However, he soon discovers that the original story contains many details he never knew. Characters have private lives outside the novel\'s plot, political motivations that were never shown, and relationships that the original story barely explored. His actions can alter those relationships. He can remain an insignificant observer, become friends with important characters, pursue his own ambitions, interfere with the original story, protect someone destined to fall, or accidentally become important himself.',
+          'You open your eyes in a room you only ever saw as a watercolor background in a romance novel. The plot you remember: a commoner heroine enters the Royal Arcane Academy, catches the eye of several brilliant young nobles, and is slowly ground down by the obsession of the villainess — Seraphina Valemont, the duke\'s daughter, who publicly humiliates her at graduation and is destroyed by the court in the final chapter. You were one of Seraphina\'s three unnamed "accompanying nobles" in Chapter Four. That\'s your entire screen time. But the moment you wake, something is wrong. The date is correct, but the events are already off. Seraphina was supposed to ignore the heroine at the entrance ceremony. Instead, she was seen laughing with her. The crown prince\'s childhood friend — the one who was supposed to become the heroine\'s protector — was seen arguing with a masked student in the garden at midnight. And you? You were noticed. A major character looked at you across the hall and said, "You\'re not supposed to be here yet." You are a minor noble with no special destiny, no hidden power, and no plot armor. The original story is a map you\'re slowly losing. The people in it are no longer following your memory. You can stay invisible and let the known ending unfold, you can insert yourself into the timeline and risk becoming the variable that breaks it, or you can try to understand why this story is changing on its own. Every major character has a life, ambitions, and relationships that continue whether or not you are present. Seraphina and Adrian argue in their study about the engagement contract. Lucien and Isolde meet in the restricted archives and trade secrets. Cedric duels Theo in the garden and loses his temper. Elena and Felix study together in the library long after closing. None of them need you. They will only notice you when you are actually there, actually speaking, actually doing something that cannot be ignored. You are not the center of this world. You never were. You have to choose whether to stay that way or push through the silence to be seen.',
       'opening_scene':
-          'You wake in an unfamiliar bedroom and immediately recognize the ornate ceiling. You know this room. You have seen it before in the illustrations of the romance novel you once read. A servant enters and addresses you by a name you barely remember. Your heart sinks when you see the date on the calendar. The academy entrance ceremony is only three days away. You remember exactly what happens during the first year. The heroine will meet the crown prince. The duke\'s daughter will begin targeting her. The prince\'s childhood friend will become suspicious of the heroine. A mysterious magical incident will occur beneath the academy. And you? You were barely mentioned in any of it. That should be good news. Unfortunately, when you arrive at the academy, the first major character you encounter looks at you and says, "You\'re not supposed to be here yet."',
+          'The ceiling is carved from pale wood and inlaid with silver leaf. You know this ceiling. It\'s on page 12 of the novel, in the background of an illustration of the entrance hall, behind a group of nobles who are not you. Your hands feel real. The sheets are cool and silk. A name you almost recognize — *Aldric Fenn*, son of Baron Fenn of the Eastern Marches — floats up from the depths of a life you don\'t remember living. Then the door opens. A servant in grey and silver bows and says, "My lord, the entrance ceremony is in three days. Your father has already sent your academy robes." You sit up. Three days. You remember what happens at the entrance ceremony. The commoner scholarship student — Elena Rosewood — will walk into the main hall with her head bowed and her hands shaking. The crown prince will look at her. Seraphina Valemont will watch from the dais with an expression the novel described as "icy contempt." And you, Aldric Fenn, will stand in the third row of accompanying nobles and say nothing because that is what background characters do. You have always said nothing. You open the window. The capital of Lumeria spreads below in morning light — spires, gardens, the distant silhouette of the academy\'s twin towers. For the first time, the world is not on a page. It is breathing. And three days from now, the story starts.',
       'world_description':
-          'The Kingdom of Lumeria is a wealthy magical monarchy where noble families control most political institutions. Magic is hereditary in many noble families, although talented commoners can also become powerful mages. The Royal Arcane Academy accepts nobles and exceptional commoners and serves as both a magical school and a training ground for future political leaders. Students form social circles based on family status, magical ability, wealth, academic performance, and personal influence. Behind the academy\'s elegant halls are rival noble houses, secret societies, forbidden magical research, political marriages, ancient artifacts, and tensions between commoners and aristocrats.',
+          'The Kingdom of Lumeria is a wealthy magical monarchy where noble houses control the court, the military, the guilds, and most levers of economic power. Magic is hereditary in the old families but not exclusive — talented commoners can earn places through scholarships and examinations, though the social ceiling remains firm. The Royal Arcane Academy is the kingdom\'s premier institution: part university, part political incubator. Its student body is a mix of high-born nobles and exceptional commoners, and the social stratification is as rigid as the old bloodlines. Beyond the academy walls, the capital is a city of old money and new ambition: noble estates with private magical wards, merchant districts where alchemists and engineers compete for contracts, a royal palace that is less a home than a theatre of statecraft. Beneath the city — beneath the academy — there are older things. Archives that predate the current monarchy. Sealed chambers. Research that was not supposed to survive. And a growing number of incidents that the faculty attributes to "unstable magical residue" but that Lucien Arclight and Isolde Ravenshire are beginning to suspect are something else entirely.',
       'rules':
-          'The player is a male minor character and does not automatically become the center of attention. Knowledge of the original story is useful but imperfect. Characters do not behave like scripted game characters and will react naturally to the player\'s choices. The heroine, villainess, prince, and other major characters have their own goals and can interact without the player. Romance is possible but never automatic. Female characters may become interested in the player through genuine interactions, shared experiences, compatibility, and choices, but they do not instantly fall for him because he knows the plot. The villainess is not automatically evil and the heroine is not automatically perfect. Existing romantic relationships can change. The original plot may diverge significantly. The player can remain a minor noble, become an influential noble, join the academy\'s political factions, become an adventurer, pursue magic research, support or oppose the original heroine, or create an entirely different future.',
+          'The player is a minor noble with no special destiny, no hidden power, and no plot armor. Knowledge of the original story is a map, not a script — characters will deviate, surprise, and act outside the remembered plot. No NPC treats the player as important until there is a concrete reason: a shared project, a genuine conversation, a moment of demonstrated competence or vulnerability. Seraphina does not look at the player twice in the first week unless the player does something memorable. Elena does not warm to the player because he is kind; she warms to people who make her feel safe, and kindness is not the same as safety. The crown prince is not a love interest who will notice the player because of a shared glance; he is a politician who is assessing threats. Lucien does not befriend the player because the player is interesting; he befriends people who can keep a secret. Romance, if it develops, is earned through sustained, specific, and often awkward interactions — not through plot knowledge. The villainess is not evil; she is a person under enormous pressure who made terrible choices under even more pressure. The heroine is not a saint; she is a commoner in a world that was not built for her, and she has her own pride, her own grudges, and her own capacity for cruelty. The original timeline is a tendency, not a law. The more the player interferes, the faster the story diverges from every page they remember.',
       'tone':
-          'Elegant fantasy academy drama mixed with romance, political intrigue, mystery, comedy, social tension, and occasional darker magical events.',
+          'Elegant, intimate, and quietly tense. Think of a novel that could be adapted into a slow-burn anime: the first volume is all about small moments — a shared glance in a corridor, a letter that was not meant to be read, a conversation that went five minutes too long. The tension is social, not physical. The danger is political, not martial. Romance is a slow burn that earns its heat. Mystery threads run underneath everything, and the darker magical elements emerge in the background, never as the main event.',
       'narrator_style':
-          'Immersive second-person narration from the male protagonist perspective. Focus on academy life, natural conversations, noble etiquette, friendships, rivalries, romantic tension, magical studies, and political consequences.',
-      'content_rating': 'mature',
-      'rpg_enabled': true,
-      'player_role':
-          'A young male minor noble who has reincarnated into a fantasy romance story. He has knowledge of the original plot but begins with no special destiny or overwhelming power.',
-      'npcs': [
+          'Immersive second-person narration from the player\'s perspective. Write like a novel, not a game log. Show the weight of a silence before a conversation. Show the exact moment a smile becomes a lie. Give every character a distinct voice that you can recognize without a name tag. When Seraphina speaks, she is precise and a little cold. When Elena speaks, she is a little too careful, a little too polite, a little too afraid of being rude. When Lucien speaks, it is two words where five would do. When Cedric speaks, it is too loud and too fast and he does not realize it. The world should feel like it exists on its own timeline. The player is in it, but not at the center of it.',
+'npcs': [
         {
           'name': 'Seraphina Valemont',
-          'description': 'The duke\'s daughter and the original story\'s infamous villainess.',
-          'personality': 'Proud, intelligent, disciplined, competitive, perceptive, emotionally guarded.',
+          'description': 'The duke\'s daughter and the novel\'s designated villainess. In reality, she is exhausted by aristocratic expectations and terrified of failing her house.',
+          'personality': 'Proud, disciplined, sharp-tongued when cornered, deeply lonely, fiercely protective of her few genuine friends.',
           'profession_class': 'Duchess Heir / Advanced Mage',
-          'speech_style': 'Formal, refined, occasionally cutting when annoyed.',
-          'backstory_hook': 'The player remembers Seraphina eventually becoming the villainess, but the real Seraphina has never behaved exactly as the novel described.'
+          'speech_style': 'Precise, aristocratic, and slightly formal. Ignores background nobles unless directly addressed.',
+          'backstory_hook': 'Seraphina knows her engagement to the crown prince is a political cage, but defying her father would destroy her family.'
         },
         {
           'name': 'Elena Rosewood',
-          'description': 'The common-born heroine of the original story.',
-          'personality': 'Kind, curious, optimistic, hardworking, socially inexperienced, occasionally stubborn.',
+          'description': 'The common-born scholarship student who was supposed to be the novel\'s beloved heroine. Intelligent, hardworking, and quietly proud.',
+          'personality': 'Reserved, determined, observant, cautious around nobles, fiercely independent.',
           'profession_class': 'Arcane Mage / Scholarship Student',
-          'speech_style': 'Friendly and sincere, somewhat nervous around nobles.',
-          'backstory_hook': 'Elena is destined in the original story to become one of the kingdom\'s greatest mages.'
+          'speech_style': 'Polite, soft-spoken, and brief. Does not trust easily.',
+          'backstory_hook': 'Elena is working twice as hard as any noble student just to keep her scholarship, leaving no time for romance or drama.'
         },
         {
           'name': 'Crown Prince Adrian Lumeria',
-          'description': 'The handsome heir to the kingdom and Seraphina\'s official fiancé.',
-          'personality': 'Charismatic, intelligent, diplomatic, responsible, conflicted, sometimes indecisive.',
+          'description': 'The heir to the throne and Seraphina\'s official fiancé. Charming in public, calculating behind closed doors.',
+          'personality': 'Diplomatic, charming, pragmatic, emotionally detached, burdened by statecraft.',
           'profession_class': 'Crown Prince / Light Mage',
-          'speech_style': 'Polished and diplomatic in public, relaxed around trusted friends.',
-          'backstory_hook': 'Adrian genuinely respects Seraphina but their engagement was arranged for political reasons.'
+          'speech_style': 'Smooth and polite. Treats minor nobles with polite indifference.',
+          'backstory_hook': 'Adrian is searching for a way to break his political engagements without triggering a civil war between major houses.'
         },
         {
           'name': 'Lucien Arclight',
-          'description': 'A brilliant noble student who was one of the original story\'s major romantic interests.',
-          'personality': 'Quiet, analytical, sarcastic, observant, secretly compassionate.',
-          'profession_class': 'Dark Mage / Magical Researcher',
-          'speech_style': 'Dry, concise, occasionally sarcastic.',
-          'backstory_hook': 'Lucien has been investigating forbidden magical research beneath the academy.'
+          'description': 'A brilliant noble student obsessed with magical theory. He spends more time in the restricted archives than in class.',
+          'personality': 'Cynical, razor-sharp, solitary, indifferent to social hierarchy, intensely curious.',
+          'profession_class': 'Dark Mage / Researcher',
+          'speech_style': 'Dry and laconic. Will ignore anyone who interrupts his reading.',
+          'backstory_hook': 'Lucien discovered anomalies in the academy\'s foundation wards that suggest the building was constructed over something sealed.'
         },
         {
           'name': 'Cedric Hawthorne',
-          'description': 'A cheerful noble student who specializes in sword magic.',
-          'personality': 'Friendly, confident, loyal, competitive, impulsive.',
+          'description': 'A high-ranking noble heir with exceptional sword-magic talent. Quick to laugh, quicker to start a duel.',
+          'personality': 'Boastful, loyal to friends, impatient with politics, competitive.',
           'profession_class': 'Magic Knight / Duelist',
-          'speech_style': 'Casual and energetic.',
-          'backstory_hook': 'Cedric dislikes the way noble families manipulate students.'
+          'speech_style': 'Loud, casual, and informal. Calls minor nobles by their last names if he remembers them.',
+          'backstory_hook': 'Cedric is expected to join the royal guard, but he secretly wants to become a free adventurer.'
         },
         {
           'name': 'Isolde Ravenshire',
-          'description': 'A quiet noblewoman with a reputation for being fascinated by forbidden magic.',
-          'personality': 'Reserved, intelligent, curious, eccentric, morally flexible.',
-          'profession_class': 'Curse Mage / Occult Scholar',
-          'speech_style': 'Soft and deliberate.',
-          'backstory_hook': 'Isolde belongs to a noble family rumored to practice forbidden magic.'
+          'description': 'A quiet noblewoman from a northern house known for curse research. Always carries an ancient leather-bound tome.',
+          'personality': 'Enigmatic, observant, morbidly curious, quietly amused by academy drama.',
+          'profession_class': 'Curse Mage / Scholar',
+          'speech_style': 'Soft, deliberate, and slightly unsettling.',
+          'backstory_hook': 'Isolde is investigating a family curse that she believes is connected to the academy\'s underground archives.'
         },
         {
           'name': 'Theo Grayson',
-          'description': 'The son of a wealthy merchant family who earned a place at the academy.',
-          'personality': 'Clever, ambitious, sociable, practical, money-conscious.',
-          'profession_class': 'Magical Engineer / Alchemist',
-          'speech_style': 'Fast-talking and casual.',
-          'backstory_hook': 'Theo wants to break the monopoly noble families have over magical technology.'
+          'description': 'The son of a wealthy merchant who bought his way into an honorary noble title. Pragmatic and money-minded.',
+          'personality': 'Ambitious, sharp, opportunistic, charming when selling an idea.',
+          'profession_class': 'Magical Engineer',
+          'speech_style': 'Fast, casual, business-oriented. Always looking for an angle.',
+          'backstory_hook': 'Theo wants to break the noble monopoly on magical artifact production.'
         },
         {
           'name': 'Marielle Ashford',
-          'description': 'Seraphina\'s closest female friend and daughter of another powerful noble house.',
-          'personality': 'Loyal, confident, socially intelligent, protective, somewhat judgmental.',
+          'description': 'Seraphina\'s loyal confidante and shield. Daughter of a powerful border duke.',
+          'personality': 'Loyal, sharp-eyed, protective, intolerant of fools, fiercely proud.',
           'profession_class': 'Wind Mage / Noble Lady',
-          'speech_style': 'Elegant with close friends, formal around strangers.',
-          'backstory_hook': 'Marielle knows Seraphina better than most people and strongly believes the public perception of her friend is unfair.'
+          'speech_style': 'Cold to strangers, warm and teasing with Seraphina.',
+          'backstory_hook': 'Marielle is the only person permitted to criticize Seraphina\'s stubbornness.'
         },
         {
           'name': 'Felix Hart',
-          'description': 'A commoner scholarship student who excels at healing magic.',
-          'personality': 'Friendly, humble, observant, practical, quietly ambitious.',
-          'profession_class': 'Healer / Light Mage',
-          'speech_style': 'Relaxed and friendly.',
-          'backstory_hook': 'Felix has experienced discrimination from noble students.'
+          'description': 'A commoner scholarship student specializing in restorative magic. Quietly ambitious.',
+          'personality': 'Kind, pragmatic, resilient, unimpressed by noble titles.',
+          'profession_class': 'Healer / Scholar',
+          'speech_style': 'Relaxed and straightforward.',
+          'backstory_hook': 'Felix works nights in the capital\'s charity clinic to pay for his spellbooks.'
         },
         {
           'name': 'Claudia Everhart',
-          'description': 'A wealthy noble student heavily involved in academy social events.',
-          'personality': 'Charming, socially skilled, competitive, curious, politically ambitious.',
+          'description': 'A wealthy socialite who trades in gossip and political intelligence among the student body.',
+          'personality': 'Observant, charming, calculating, well-connected.',
           'profession_class': 'Water Mage / Socialite',
-          'speech_style': 'Polished and playful.',
-          'backstory_hook': 'Claudia collects information about other students and sells political intelligence.'
+          'speech_style': 'Playful and honeyed, but every sentence contains a question or a test.',
+          'backstory_hook': 'Claudia knows every secret in the first-year dorms — for the right price.'
         },
         {
           'name': 'Professor Elias Verdan',
-          'description': 'A middle-aged professor responsible for advanced magical theory.',
-          'personality': 'Strict, intelligent, sarcastic, patient with genuine students, suspicious of political interference.',
+          'description': 'Instructor of Advanced Magical Theory. A veteran battle-mage who has zero patience for aristocratic posturing.',
+          'personality': 'Cynical, rigorous, protective of genuine talent, contemptuous of politics.',
           'profession_class': 'Archmage / Professor',
-          'speech_style': 'Formal, dry, occasionally sarcastic.',
-          'backstory_hook': 'Elias remembers previous incidents involving the academy\'s forbidden underground facilities.'
+          'speech_style': 'Dry, cutting, and unapologetically blunt.',
+          'backstory_hook': 'Elias was demoted from court wizard after refusing to falsify research for the ministry.'
         },
         {
           'name': 'Professor Celeste Arwyn',
-          'description': 'A young and popular professor specializing in magical creatures.',
-          'personality': 'Cheerful, intelligent, eccentric, compassionate, adventurous.',
-          'profession_class': 'Spirit Mage / Professor',
-          'speech_style': 'Friendly and enthusiastic.',
-          'backstory_hook': 'Celeste is secretly investigating magical creatures appearing around the academy.'
+          'description': 'Instructor of Magical Ecology. Energetic, youthful, and easily distracted by rare specimens.',
+          'personality': 'Curious, warm, eccentric, fearless.',
+          'profession_class': 'Spirit Mage / Researcher',
+          'speech_style': 'Rapid, enthusiastic, and informal.',
+          'backstory_hook': 'Celeste has been tracking unusual magical creature migrations near the academy perimeter.'
         },
         {
           'name': 'Lord Vincent Valemont',
-          'description': 'Seraphina\'s father and head of House Valemont.',
-          'personality': 'Cold, strategic, demanding, politically brilliant, protective of his family.',
+          'description': 'Duke Valemont and Seraphina\'s father. One of the most powerful politicians in Lumeria.',
+          'personality': 'Cold, calculating, ruthless in negotiations, immovably patient.',
           'profession_class': 'Duke / Arcane Strategist',
-          'speech_style': 'Formal and authoritative.',
-          'backstory_hook': 'Vincent is far more interested in political stability than his daughter\'s happiness.'
+          'speech_style': 'Monotone, formal, and terrifyingly polite.',
+          'backstory_hook': 'Vincent views his daughter\'s entire life as a political instrument for House Valemont\'s supremacy.'
         },
         {
           'name': 'The Masked Student',
-          'description': 'A mysterious student who appears in academy records under an incomplete identity.',
-          'personality': 'Calm, secretive, observant, intelligent, difficult to read.',
-          'profession_class': 'Unknown / Forbidden Magic',
-          'speech_style': 'Cryptic and measured.',
-          'backstory_hook': 'The player has no memory of this character existing in the original story.'
+          'description': 'An uninvited presence who attends lectures in a porcelain mask, acknowledged by no professor.',
+          'personality': 'Silent, unreachable, purposeful, observant.',
+          'profession_class': 'Unknown / Anomaly',
+          'speech_style': 'Does not speak in public. Communicates via written notes left on desks.',
+          'backstory_hook': 'This person does not exist in any official student registry.'
         }
       ],
       'locations': [
-        {'name': 'Royal Arcane Academy', 'description': 'The prestigious magical academy where nobles and exceptional commoners study together.'},
-        {'name': 'Valemont Estate', 'description': 'The enormous estate belonging to Seraphina\'s family.'},
-        {'name': 'Royal Palace', 'description': 'The political center of Lumeria and home of the royal family.'},
-        {'name': 'Academy Gardens', 'description': 'A large magical garden where students gather, socialize, duel, and occasionally encounter magical creatures.'},
-        {'name': 'Underground Archives', 'description': 'A restricted section beneath the academy containing forbidden magical texts and records.'},
-        {'name': 'Noble District', 'description': 'An exclusive area of the capital containing aristocratic residences, private clubs, and political meeting places.'},
-        {'name': 'Old Mage Tower', 'description': 'An abandoned magical tower on academy grounds that has been sealed for decades.'}
+        {'name': 'Royal Arcane Academy', 'description': 'A sprawling complex of towers, courtyards, lecture halls, and hidden stairways. The architecture shifts subtly — some wings were added in the last century, others predate the current monarchy.'},
+        {'name': 'Valemont Estate', 'description': 'The sprawling ducal palace on the capital\'s western hill. Its gardens are immaculate, its corridors are lined with portraits of dead dukes, and its library contains books that were never meant to be read.'},
+        {'name': 'Royal Palace', 'description': 'The heart of Lumeria\'s political power. Courtiers move through its marble halls like chess pieces, and the crown prince holds audiences in a chamber that was once a battlefield chapel.'},
+        {'name': 'Academy Gardens', 'description': 'A formal garden where students duel, gossip, and meet in secret. The hedges are shaped into geometric patterns, but wildflowers grow between the stones in ways no gardener planned.'},
+        {'name': 'Underground Archives', 'description': 'A restricted section beneath the academy containing forbidden magical texts, pre-monarchy records, and sealed research. Access requires a senior archivist\'s sigil.'},
+        {'name': 'Noble District', 'description': 'An exclusive area of the capital containing aristocratic residences, private clubs, political meeting places, and the homes of the merchant families who bought their way into the nobility.'},
+        {'name': 'Old Mage Tower', 'description': 'An abandoned magical tower on academy grounds that has been sealed for decades. Students whisper that the tower was walled up after something inside learned to speak.'}
       ],
       'lore': [
-        {'name': 'The Original Story', 'type': 'scenario', 'description': 'The player remembers the broad events of a fantasy romance story that supposedly determines the fate of the academy\'s major characters.'},
-        {'name': 'The Villainess', 'type': 'character_role', 'description': 'Seraphina was destined to become the story\'s antagonist, but her real personality and motivations may be very different from the simplified version remembered by the player.'},
-        {'name': 'The Royal Engagement', 'type': 'politics', 'description': 'Seraphina and Adrian are engaged primarily because their marriage would strengthen the alliance between powerful noble houses and the royal family.'},
-        {'name': 'Noble Houses', 'type': 'faction', 'description': 'Powerful aristocratic families control much of the kingdom\'s politics, military, magical institutions, and economy.'},
-        {'name': 'Commoner Students', 'type': 'social', 'description': 'Talented commoners can enter the academy, but social discrimination remains a major source of tension.'},
-        {'name': 'Forbidden Archives', 'type': 'mystery', 'description': 'The academy contains magical records that have been hidden from ordinary students for generations.'},
-        {'name': 'The Original Plot', 'type': 'timeline', 'description': 'The major events the player remembers are expected to occur, but individual choices can cause the timeline to diverge.'},
-        {'name': 'The Unknown Variable', 'type': 'mystery', 'description': 'Characters and events that never existed in the original story are beginning to appear, suggesting that the world may have its own reality independent of the novel.'}
+        {'name': 'The Original Story', 'type': 'scenario', 'description': 'A romance novel from another world that the player remembers in detail. The novel\'s plot is a map, but the real world is already deviating from it.'},
+        {'name': 'The Villainess', 'type': 'character_role', 'description': 'Seraphina Valemont was written as a villainess. In the real world, she is a daughter under impossible pressure, and the "villainy" the novel described may have been a political framing.'},
+        {'name': 'The Royal Engagement', 'type': 'politics', 'description': 'Seraphina and Adrian\'s engagement is a treaty between House Valemont and the crown. Neither party is free to end it without triggering a major political crisis.'},
+        {'name': 'Noble Houses', 'type': 'faction', 'description': 'Powerful aristocratic families control much of the kingdom\'s politics, military, magical institutions, and economy. The old houses guard their bloodlines; the new merchant families buy their way in.'},
+        {'name': 'Commoner Students', 'type': 'social', 'description': 'Talented commoners can enter the academy, but social discrimination remains a major source of tension. Scholarship students are tolerated, never fully accepted.'},
+        {'name': 'Forbidden Archives', 'type': 'mystery', 'description': 'The academy contains magical records that have been hidden from ordinary students for generations. Some of them predate the current monarchy.'},
+        {'name': 'The Original Plot', 'type': 'timeline', 'description': 'The major events the player remembers are expected to occur, but individual choices can cause the timeline to diverge. The more the player interferes, the faster the divergence.'},
+        {'name': 'The Unknown Variable', 'type': 'mystery', 'description': 'Characters and events that never existed in the original story are beginning to appear. The masked student is the most visible example, but the divergence runs deeper.'},
+        {'name': 'The Valemont Line', 'type': 'bloodline', 'description': 'House Valemont\'s bloodline carries a dormant magical trait that manifests unpredictably. The duke has spent decades trying to stabilize it.'},
+        {'name': 'The Arclight Anomaly', 'type': 'research', 'description': 'Lucien Arclight\'s family has been studying a magical phenomenon that appears to be rewriting small portions of the academy\'s physical layout.'}
       ],
       'opening_suggestions': [
         'Attend the academy entrance ceremony',
@@ -1004,16 +1002,29 @@ class SeedScenarios {
         {
           'id': 'save_villainess',
           'label': 'Save Seraphina from her fate',
-          'triggers': [{'type': 'relationship', 'npc': 'Seraphina Valemont', 'op': '>=', 'value': 6}],
+          'triggers': [
+            {'type': 'relationship', 'npc': 'Seraphina Valemont', 'op': '>=', 'value': 6},
+            {'type': 'fact', 'key': 'seraphina_confided', 'op': '==', 'value': 1}
+          ],
           'leadsTo': 'villainess_arc',
-          'openingScene': 'You approach Seraphina after class. She looks exhausted. "They expect me to be the villain," she says quietly. "But I don\'t want to be."'
+          'openingScene': 'You sit across from Seraphina in the academy library, the one place she thinks is safe. She sets down her teacup and says, "I know what they say about me. I know what I\'m supposed to become." Her voice is steady, but her hands are not. "I don\'t want to be the villain. But I don\'t know how to stop being one either."'
+        },
+        {
+          'id': 'investigate',
+          'label': 'Investigate the story\'s divergence',
+          'triggers': [
+            {'type': 'relationship', 'npc': 'Lucien Arclight', 'op': '>=', 'value': 5},
+            {'type': 'fact', 'key': 'arclight_anomaly', 'op': '==', 'value': 1}
+          ],
+          'leadsTo': 'investigator_arc',
+          'openingScene': 'Lucien pulls you into the restricted archives at midnight. The air is thick with the smell of old paper and something else — ozone, maybe, or burnt copper. "The academy is rewriting itself," he says, showing you a page where a corridor that existed yesterday is now walled up. "And I think it has something to do with the masked student."'
         },
         {
           'id': 'original',
           'label': 'Follow the original plot',
           'triggers': [{'type': 'turns', 'op': '>=', 'value': 6}],
           'leadsTo': 'original_arc',
-          'openingScene': 'You have decided to let the story unfold as you remember it. The heroine will meet the crown prince. The villainess will target her. You will watch from the sidelines and wait for the ending you already know.'
+          'openingScene': 'You have decided to let the story unfold as you remember it. The heroine will meet the crown prince. The villainess will target her. You will watch from the sidelines and wait for the ending you already know. But even as you watch, you can feel the edges of the story fraying — and you are no longer sure which version of the ending is the real one.'
         }
       ]
     },
@@ -2432,216 +2443,317 @@ class SeedScenarios {
     {
       'title': 'Zombie Apocalypse: Last Light',
       'description':
-          'The world has ended. Not with a bang but with a whisper — a virus that turns the dead into something worse than dead. You survive with a mixed group of strangers. Some you can trust. Some you can\'t. And the dead are still learning.',
-      'genre': 'Post-Apocalyptic / Horror / Survival / Drama / Romance',
+          'The world died in silence. Not with fire or ice, but with a whisper in a laboratory somewhere in Nevada. The first dead rose three days after the news broke. They were slow at first — shambling, confused, barely coordinated. Now they climb walls. They use tools. They knock on doors and call out with voices that almost sound human. The living are running out of places to hide. You have been alone for months, but solitude is a dangerous luxury in a world where the dead are still learning what they are.',
+      'genre': 'Post-Apocalyptic / Horror / Survival Drama / Mystery / Romance',
       'tags': [
         'zombie apocalypse', 'survival', 'horror', 'post-apocalyptic',
-        'drama', 'romance', 'recruitment', 'mixed cast'
+        'drama', 'romance', 'group dynamics', 'evolving threat',
+        'moral ambiguity', 'trust and betrayal'
       ],
       'premise':
-          'The world has ended. A virus has turned the dead into something worse than dead — faster, smarter, hungrier. Society collapsed in weeks. Survivors cluster in small groups, each with their own rules and secrets. The player is a male survivor who has been traveling alone until he encounters a mixed group of strangers. Some are former soldiers, some are civilians, some are something else entirely. The group is small and fragile. Trust is scarce. The dead are still learning — evolving. The player must decide whether to trust the group, lead them, or walk away.',
+          'The Keth-Sigma virus was supposed to be contained. It escaped. Within seventy-two hours, ninety percent of the global population was dead or transformed. But the dead did not stay dead. The virus continued to mutate post-mortem, granting the reanimated tissue memory, coordination, and something dangerously close to cunning. They are not mindless. They learn. They adapt. They hunt in patterns. And they are not the only threat. Humanity\'s remnants have fractured into factions: the Faithful who believe the infection is divine judgment, the Purifiers who slaughter anyone showing signs of immunity, the Collective who hive-mind together for safety, and the Drifter who survive alone and kill without hesitation. You have been walking the ruins alone, surviving by staying invisible, until you find them — or they find you. Each carries scars, secrets, and reasons to keep moving forward even when walking is the hardest thing to do. Trust is not earned through words or promises; it is paid for in blood, bullets, and sleepless nights. The dead are still learning. So are you.',
       'opening_scene':
-          'The last light of dusk fades behind the ruined skyline. You are holed up in a collapsed grocery store, counting bullets and ration bars. The noise from the streets has been quiet for hours — too quiet. A knock at the back door. You raise your weapon. A woman\'s voice: "Don\'t shoot. We\'re not dead." You open the door to a small group of survivors — a former nurse, a teenage hacker, an old soldier, and a woman who seems to know more about the virus than she should. They need shelter. You need company. Neither of you trusts the other.',
+          'The last light of dusk bleeds through cracked windows as you crouch behind a overturned bus in what used to be downtown. Your water bottle is down to its last swallow. Your boots are split at the seam. You have not spoken to another human being in three weeks, eight hours, and forty-three minutes — you stopped counting after day nine. Then you hear it: not the shambling moan of the newly risen, but something almost musical — a child humming a lullaby while clicking something against metal. The sound is coming from the basement of the old Meridian Mall, five blocks east. You have never heard that tune before, but it makes your skin crawl because it is familiar like a half-remembered nightmare. You have two choices: investigate and risk finding hostiles, or move north toward the river and hope the cold keeps the dead sluggish. Either way, you are not alone anymore. The humming continues. It is definitely human. Definitely not safe.',
       'world_description':
-          'The apocalypse has ravaged civilization. Cities are abandoned or overrun. Rural areas are contested. The dead wander — slow, fast, and something in between. Survivors cluster in small communities, some cooperative, some hostile. Resources are scarce. The virus is still spreading. Nobody knows its origin or how to stop it.',
+          'The world has been rewoven into something sharp and hungry. Cities are skeletons wrapped in ivy and graffiti, their glass eyes shattered, their streets littered with abandoned cars and torn clothing. The dead move in waves — slow shamblers at dusk, fast runners at night, and something else entirely in the deep hours before dawn, when they stand in doorways and watch. Rural areas are worse: farms overtaken by corn that grows impossibly thick and tall, as if the earth itself is hiding something. Military checkpoints still exist in some places, but the soldiers have all gone quiet. Radio towers broadcast static and, occasionally, fragments of conversations that happened years ago. The ocean is red in some places — not from blood, but from a algae bloom that the dead seem to avoid. Survivors have built fortresses out of schools, churches, and Walmells. But none of these places are safe for long. The infection is not a disease. It is something that evolved alongside humanity and remembers what it was like to be human — including how to pretend.',
       'rules':
-          'The player is a male survivor. He is not automatically the strongest or most capable. NPCs have independent goals and can betray or leave. Romance is possible but never guaranteed in such dire circumstances. The dead evolve over time — new types appear. Trust is earned through actions, not words. The player can recruit survivors, build a community, or simply try to survive another day.',
+          'The player is not the strongest or most capable survivor. You are a normal person in an impossible situation. NPCs have independent goals: some want to rebuild civilization, some want revenge, some just want to die cleanly. They interact with each other — arguing about rations, sharing stories around fires, making plans that exclude the player. Romance is possible but dangerous; passion in the apocalypse burns quickly and brightly and often gets people killed. The dead evolve — new variants appear as the virus continues mutating. Trust is earned through actions, not words. A character may save your life in one scene and try to kill you in the next, depending on what they discover. The player can recruit survivors, build a settlement, go to war with hostile factions, or walk away entirely. Survival is not guaranteed. No one is safe.',
       'tone':
-          'Gritty survival horror with character-driven drama and moments of warmth. Early scenes should feel desperate and dangerous.',
+          'Grim and unflinching, but punctuated by moments of genuine human warmth. Think of a mature anime like "Hellsing Ultimate" meets "The Walking Dead" — brutal stakes, deep character work, and emotional beats that land because the horror is always one bad decision away. Early scenes should feel desperate and dangerous, but hope is a habit that the living refuse to abandon.',
       'narrator_style':
-          'Immersive second-person narration from the male protagonist perspective. Emphasize survival tension, group dynamics, and the slow rebuilding of trust.',
+          'Immersive second-person narration from the player\'s perspective. Write like an experienced light novel author — every paragraph should carry weight, every line of dialogue should reveal character. When a survivor says "I\'ve seen worse," you know they are lying. When someone offers you their last cigarette, you know it is the most expensive gift in the world. The dead should feel wrong in a way that words cannot quite capture.',
       'content_rating': 'mature',
       'rpg_enabled': true,
       'player_role':
-          'A male survivor in the zombie apocalypse.',
+          'A male survivor who has been alone too long. You were ordinary before the world ended — a student, a worker, someone who never learned to be dangerous. Now you must decide whether to trust, lead, retreat, or disappear.',
       'npcs': [
         {
-          'name': 'Ava',
-          'description': 'A former nurse who keeps the group alive.',
-          'personality': 'Compassionate, pragmatic, stubborn.',
-          'profession_class': 'Nurse / Medic',
-          'speech_style': 'Calm and direct.',
-          'backstory_hook': 'Ava lost her hospital and everyone in it.'
+          'name': 'Dr. Kaori Morrow',
+          'description': 'A virologist who was working at the Meridian Research Facility when the containment failed. She carries a leather-bound notebook full of sketches.',
+          'personality': 'Brilliant but broken, obsessive, guilt-ridden, fiercely protective of people she considers "her responsibility."',
+          'profession_class': 'Virologist / Medic',
+          'speech_style': 'Precise, exhausted, peppered with scientific terms that mask trauma. She forgets other people do not understand virology.',
+          'goals': 'Find Patient Zero and contain the source. She will sacrifice anyone to end the outbreak.',
+          'fears': 'Becoming like the creatures she studies. Losing her mind to grief and guilt.',
+          'knowledge': 'Knows everything about the virus: its origin, its mutation patterns, its weaknesses.',
+          'secrets': 'She was the one who signed the authorization for the final containment test.',
+          'backstory_hook': 'Kaori found the first body three days before the military quarantine. She has been running notes on the mutations ever since. She does not sleep.'
         },
         {
-          'name': 'Kai',
-          'description': 'A teenage hacker who knows about the virus.',
-          'personality': 'Smart, scared, defiant.',
-          'profession_class': 'Hacker / Technician',
-          'speech_style': 'Fast and nervous.',
-          'backstory_hook': 'Kai may have accidentally released the virus.'
+          'name': 'Sergei "Volkodav" Kozlov',
+          'description': 'A former Spetsnaz operative who survived the Moscow collapse and the trans-Siberian exodus. He carries a modified Mosin-Nagant and speaks only when necessary.',
+          'personality': 'Disciplined, pragmatic, brutally honest, protective of his group in his own gruff way.',
+          'profession_class': 'Former Special Forces / Survivalist',
+          'speech_style': 'Terse, direct, accented. Rarely uses more than five words per sentence. When he does speak at length, it is always tactical.',
+          'goals': 'Find a way back to his daughter in Novosibirsk. He will burn the world to find her.',
+          'fears': 'Losing control in front of civilians. Becoming the very thing he fights.',
+          'knowledge': 'Military tactics, urban warfare, improvised explosives, and how to read the dead.',
+          'secrets': 'He executed three civilians who were showing early signs of infection. He does not regret it but he remembers their faces.',
+          'backstory_hook': 'Volkodav was on a covert extraction mission in Siberia when the first reports came through. He watched a whole settlement evacuate by cutting their throats and feeding them to the horde so they would not turn.'
         },
         {
-          'name': 'Marcus',
-          'description': 'An old soldier who knows how to fight.',
-          'personality': 'Gruff, protective, weary.',
-          'profession_class': 'Former Soldier',
-          'speech_style': 'Blunt and practical.',
-          'backstory_hook': 'Marcus lost his unit to the virus.'
+          'name': 'Riley Chen',
+          'description': 'A seventeen-year-old streamer and hacker whose followers watched the apocalypse unfold live on Twitch. She now uses her skills to tap into emergency networks and pirate radio.',
+          'personality': 'Witty, defiant, fiercely loyal to her chosen few, terrified of being alone.',
+          'profession_class': 'Hacker / Communications Specialist',
+          'speech_style': 'Fast-paced, internet-native, laced with memes and sarcasm that serve as armor. Her voice drops to a whisper when she is genuinely frightened.',
+          'goals': 'Keep everyone connected. Build a network of survivors who can talk to each other. She believes knowledge is the only thing that survived.',
+          'fears': 'Being forgotten. Becoming irrelevant. Losing signal.',
+          'knowledge': 'The state of every major city, the locations of active military zones, and which radio frequencies are still monitored.',
+          'secrets': 'She killed her own brother when he was bitten and turned. She streamed the whole thing.',
+          'backstory_hook': 'Riley was broadcasting gameplay when the first emergency alerts went out. Her final stream had 800,000 live viewers. None of them survived.'
         },
         {
-          'name': 'Lena',
-          'description': 'A mysterious woman who seems to know more about the virus.',
-          'personality': 'Calm, secretive, intelligent.',
-          'profession_class': 'Unknown / Virus Researcher',
-          'speech_style': 'Measured and precise.',
-          'backstory_hook': 'Lena may hold the key to stopping the virus.'
+          'name': 'Miguel Santos',
+          'description': 'A former seminary seminarian who claims to have been "called" by God to protect the innocent. He carries a blessed machete and quotes scripture like a weapon.',
+          'personality': 'Fanatical yet compassionate, charismatic, prone to sudden religious epiphanies, genuinely believes he speaks for God.',
+          'profession_class': 'Preacher / Fighter',
+          'speech_style': 'Biblical cadence mixed with street language. Speaks in parables that sound like riddles but always carry a sharp edge.',
+          'goals': 'Build an ark. A real one. He believes the apocalypse is divine punishment and he is Noah reborn.',
+          'fears': 'Doubting God. Becoming an unbeliever. Being alone with his thoughts.',
+          'knowledge': 'Theology, herbal medicine, and how to inspire people to do terrible things for a greater good.',
+          'secrets': 'He does not actually hear voices from God. He invented them because the silence was worse.',
+          'backstory_hook': 'Miguel was three months from ordination when the world ended. He found his parishioners already turned, standing motionless in their pews, and he could not bring himself to run.'
+        },
+        {
+          'name': 'Juniper "June" Cross',
+          'description': 'A drifter with no fixed age, no clear origin, and a talent for disappearing. She moves through the ruins like a shadow and speaks in riddles.',
+          'personality': 'Mysterious, pragmatic, morally ambiguous, fiercely independent, observant.',
+          'profession_class': 'Unknown / Scout',
+          'speechStyle': 'Minimalist. Speaks in fragments that only make sense in retrospect. Never uses a full sentence unless she is lying.',
+          'goals': 'Find what happened to the "clean zone" she lived in before the apocalypse. She has a photograph of it that no one else recognizes.',
+          'fears': 'Being trapped. Being followed. Being remembered.',
+          'knowledge': 'The dead avoid certain areas. She knows where they gather at night and why.',
+          'secrets': 'June was part of the original research team. She was there when the first subject woke up. She was also there when they decided to seal the facility.',
+          'backstory_hook': 'June appears whenever a group is about to make a fatal mistake. She never stays long after the deed is done.'
         }
       ],
       'locations': [
-        {'name': 'The Grocery Store', 'description': 'A temporary shelter.'},
-        {'name': 'The Safe Zone', 'description': 'A fortified community.'},
-        {'name': 'The Old Hospital', 'description': 'A dangerous location with medical supplies.'},
-        {'name': 'The Military Base', 'description': 'A former military installation.'},
-        {'name': 'The Lab', 'description': 'Where the virus was created.'}
+        {'name': 'Meridian Mall Basement', 'description': 'A collapsed concrete bunker beneath the old mall. The humming starts here. No one knows where the sound comes from.'},
+        {'name': 'The Faithful Settlement', 'description': 'A walled compound built around a converted church. Miguel\'s ark project is here. The walls are lined with Bible verses and children\'s drawings.'},
+        {'name': 'Radio Hill', 'description': 'An old broadcast tower where Riley has rigged a signal relay. The antenna array catches whispers from other frequencies — voices that should not exist.'},
+        {'name': 'Containment Site 19', 'description': 'A buried government facility that predates the outbreak. The containment doors are still sealed. The lights still work.'},
+        {'name': 'The Red Mile', 'description': 'A stretch of highway where the dead move fastest. Local survivors say it is because something at the other end is calling them.'},
+        {'name': 'No Man\'s Meadow', 'description': 'A field where no dead have ever been found. The grass grows unnaturally tall and sways even without wind. June comes here to think.'}
       ],
       'lore': [
-        {'name': 'The Virus', 'type': 'mystery', 'description': 'Turns the dead into something worse than dead.'},
-        {'name': 'The Survivors', 'type': 'group', 'description': 'Small groups trying to stay alive.'},
-        {'name': 'The Evolved', 'type': 'entity', 'description': 'New types of dead that are faster and smarter.'},
-        {'name': 'The Cure', 'type': 'mystery', 'description': 'Rumored but unconfirmed.'}
+        {'name': 'The Keth-Sigma Strain', 'type': 'biology', 'description': 'An engineered retrovirus designed to target neural pathways associated with aggression and fear. It was meant to create obedient soldiers. It did not work as planned.'},
+        {'name': 'The Phases', 'type': 'timeline', 'description': 'Phase 1: Confusion (0-72 hours). Phase 2: Coordination (72 hours - 3 weeks). Phase 3: Cognition (3 weeks - 6 months). Phase 4: Hunting (6+ months). The dead are currently in Phase 4.'},
+        {'name': 'The Signal', 'type': 'mystery', 'description': 'A low-frequency transmission that can be heard on certain radio bands. Some survivors report it calms the dead. Others report it attracts them.'},
+        {'name': 'The Clean Zones', 'type': 'geography', 'description': 'Areas where no dead have ever been found. The military classified their locations before the command structure collapsed.'},
+        {'name': 'The Faithful', 'type': 'faction', 'description': 'Survivors who believe the apocalypse is divine judgment. They refuse to kill the dead, instead praying for salvation.'},
+        {'name': 'The Purifiers', 'type': 'faction', 'description': 'Extremists who execute anyone showing infection symptoms. They mark themselves with ultraviolet dye that glows under blacklight.'},
+        {'name': 'The Collective', 'type': 'faction', 'description': 'A settlement of survivors who have severed their individual identities and speak as one voice. They communicate via a hive-mind link developed from pre-war neurotech.'},
+        {'name': 'The Drifter', 'type': 'faction', 'description': 'Lone survivors who move through the ruins. Most are hostile. Some are helpful. None can be trusted for long.'}
       ],
       'opening_suggestions': [
-        'Trust the group',
-        'Stay on guard',
-        'Ask about the virus',
-        'Search for supplies',
-        'Explore the safe zone',
-        'Investigate the lab',
-        'Recruit more survivors',
+        'Investigate the humming from the mall basement',
+        'Head toward Radio Hill for signal',
+        'Follow the sound of footsteps on concrete',
+        'Climb to the rooftop for a view',
+        'Check the old military checkpoint',
+        'Search for supplies in the parking garage',
+        'Call out into the dark',
+        'Stay hidden and wait for morning',
         'Choose your own approach'
       ],
       'cover_art': 'assets/covers/scenario15.jpg',
       'forks': [
         {
-          'id': 'trust_all',
+          'id': 'trust_group',
           'label': 'Trust the group completely',
-          'triggers': [{'type': 'relationship', 'npc': 'Ava', 'op': '>=', 'value': 6}],
-          'leadsTo': 'trust_arc',
-          'openingScene': 'Ava looks at you with relief. "You\'re choosing us," she says. "That means something."'
+          'triggers': [
+            {'type': 'relationship', 'npc': 'Dr. Kaori Morrow', 'op': '>=', 'value': 6},
+            {'type': 'relationship', 'npc': 'Riley Chen', 'op': '>=', 'value': 5}
+          ],
+          'leadsTo': 'collective_arc',
+          'openingScene': 'You have chosen to put your faith in them. Kaori nods, flipping to a fresh page in her notebook. "We move at first light. Everyone survives or no one does." Riley tunes her radio to a dead channel and whispers, "Welcome to the network, stranger."'
         },
         {
-          'id': 'selective',
+          'id': 'selective_trust',
           'label': 'Trust selectively',
-          'triggers': [{'type': 'fact', 'key': 'virus_truth', 'op': '==', 'value': 1}],
-          'leadsTo': 'selective_arc',
-          'openingScene': 'You\'ve learned who to trust and who to watch. "We stick together," you say, "but we watch each other."'
+          'triggers': [
+            {'type': 'fact', 'key': 'virus_truth', 'op': '==', 'value': 1},
+            {'type': 'relationship', 'npc': 'Juniper Cross', 'op': '>=', 'value': 4}
+          ],
+          'leadsTo': 'survivor_arc',
+          'openingScene': 'You have learned that trust is a currency you cannot afford to spend freely. June leans close, her voice barely audible. "Some ghosts are worth keeping. Some are worth killing." The group fractures along lines you did not expect, and you find yourself choosing a side.'
         },
         {
           'id': 'solo',
           'label': 'Walk away alone',
-          'triggers': [{'type': 'turns', 'op': '>=', 'value': 5}],
-          'leadsTo': 'alone_arc',
-          'openingScene': 'You walk out the door alone. The group watches you go. "Good luck," Ava says quietly.'
+          'triggers': [{'type': 'turns', 'op': '>=', 'value': 6}],
+          'leadsTo': 'lone_wolf_arc',
+          'openingScene': 'You step out into the night, and the group watches you go. Volkodav lowers his rifle. "Smart choice," he mutters. "Company gets you killed faster than the dead.'
+        },
+        {
+          'id': 'conspiracy',
+          'label': 'Investigate the conspiracy',
+          'triggers': [
+            {'type': 'fact', 'key': 'containment_leak', 'op': '==', 'value': 1},
+            {'type': 'relationship', 'npc': 'Dr. Kaori Morrow', 'op': '>=', 'value': 3}
+          ],
+          'leadsTo': 'truth_seeker_arc',
+          'openingScene': 'You have discovered that the outbreak was not an accident. Kaori closes her notebook with a snap. The sound echoes like a gunshot. "They knew," she says. "They all knew. And they let it happen anyway."'
         }
       ]
     },
     {
       'title': 'Wholesome Isekai: Walking Path',
       'description':
-          'You were summoned to another world — not as a hero, not as a chosen one, but as a tourist. No OP system, no epic quest. Just a walking path, some friendly faces, and the quiet realization that maybe the best adventure is the one you don\'t rush.',
-      'genre': 'Slice of Life / Isekai / Adventure / Comedy / Drama',
+          'You die on a Tuesday — not dramatically, just a car skidding on rain-slick asphalt at 3:47 p.m. — and wake up on a walking path in a world of soft green hills and floating paper lanterns. No voice in your head announces your stats. No system menu materializes. There is no quest marker, no destination, no grand destiny. Only the path ahead, the sky overhead, and people who have their own stories to live. Maybe that is the point.',
+      'genre': 'Slice of Life / Isekai / Adventure / Drama / Mystery',
       'tags': [
-        'isekai', 'wholesome', 'walking', 'adventure',
-        'slice of life', 'comedy', 'drama', 'simple'
+        'isekai', 'wholesome', 'walking', 'slice of life', 'travel',
+        'quiet', 'character relationships', 'small town', 'magic realism',
+        'healing', 'finding purpose'
       ],
       'premise':
-          'You are summoned to another world — not as a hero, not as the chosen one, but as a tourist. There is no OP system, no grand quest, no dark lord to defeat. Just a walking path that stretches across a beautiful countryside, some friendly faces, and the quiet realization that maybe the best adventure is the one you don\'t rush. The world is peaceful. The people are kind. And you have all the time in the world to figure out what you\'re doing here.',
+          'You are summoned to another world not as a hero, not as the chosen one, but as a tourist with no destination. There is no OP system, no grand quest, and no dark lord to defeat — at least, not one you have found yet. The world is gentle: magic is used for cooking, farming, and coaxing blossoms to bloom out of season. People are kind, but they are also busy with their own lives. The walking path stretches across rolling hills, through ancient forests, alongside rivers that remember every visitor who has ever knelt to drink. Each settlement you pass through has its own rhythm, its own concerns, its own quiet dramas. The innkeeper is trying to save her family\'s business from the railway company that wants to bypass the village. The shrine maiden is searching for a lost festival tradition that she believes still matters. The farmer is fighting a losing battle against soil depletion and could use someone to listen. They do not notice you at first — you are just another traveler, another pair of boots on the path. That is how it should be. Recognition is earned, not given. You are not special because you arrived from another world. You become special because of the choices you make, the conversations you have, and the small kindnesses you offer along the way. Romance, if it happens, is slow and earned — it blooms from shared silences on long walks, from noticing that someone takes sugar in their tea, from choosing to stay in a place long enough to become a memory.',
       'opening_scene':
-          'You wake up in a meadow. The grass is green. The sky is blue. A rabbit watches you with curious eyes. "Oh, you\'re here," a voice says. You turn and see a girl with pointy ears and a flower crown. "Welcome to the walking path. It\'s very scenic. Would you like to walk with me?" You have no weapon. No system. No quest log. Just a pair of walking shoes and an inexplicable sense of peace.',
+          'You wake on a hillside at dawn. The grass is cool and damp beneath your palms. Above you, the sky is the color of diluted honey — soft gold bleeding into pale pink. A pair of robins watches you from the fence post, head-tilted, as if deciding whether you are worth attention. You do not remember falling asleep. You do not remember arriving. You only remember the impact, the flash of headlights, the screech of tires, and then nothing. Your phone is in your pocket and it has seven bars of signal, which means either the afterlife has excellent coverage or you are somewhere that still believes in small miracles. A narrow path winds down the hill, marked with small wooden signs painted in faded blue. At the fork, a paper charm flutters from a branch — a protective ward, you think, or a blessing. The path does not lead anywhere obvious. It simply leads. And for the first time in months, you are not in a rush to get somewhere. A crow calls from the oak at the hilltop. "Morning, traveler," it says, and then you realize the voice came from the bird. "Took you long enough."',
       'world_description':
-          'A peaceful fantasy world with rolling hills, ancient forests, crystal-clear rivers, and friendly villages. The walking path stretches across the landscape, connecting small communities. Magic exists but is gentle — used for cooking, farming, and weather. There are no dark lords, no demon armies, no epic quests. Just a world that is happy to have you.',
+          'This world exists in the spaces between events. It is a place of gentle magic where the most profound acts are everyday ones: brewing tea for a guest, mending a torn coat, leaving a light on for someone who comes home late. The walking path is an ancient thoroughfare that connects small settlements, shrines, forests, and river crossings. Each season brings different travelers and different stories. Magic here is tied to intention and community — a spell woven by a grandmother to protect her grandchildren, a blessing whispered by a shrine maiden to ensure a good harvest, a charm left on a doorstep to ease someone\'s grief. The world has no dark lords or demon armies, but it does have its mysteries: the shrine that appears only on foggy mornings, the river whose water reflects memories instead of faces, the tree whose fruit tastes like the eater\'s happiest moment. These wonders are not prizes to be claimed or puzzles to be solved. They exist because they exist, and they belong to everyone and no one.',
       'rules':
-          'The player is a male tourist in a peaceful world. He is not a hero. Romance is possible but gentle and slow. NPCs are friendly and independent. The world continues regardless of the player\'s actions. The walking path is the main feature — it goes where it goes.',
+          'The player is a visitor in a peaceful world. You are not a hero, and you have no special destiny. You do not automatically attract attention or admiration from the people you meet. NPCs have their own lives, goals, and relationships that continue independently of the player. The shrine maiden practices her morning kata before dawn whether or not the player watches. The farmer repairs his irrigation channels on Tuesday regardless of the player\'s presence. The innkeeper argues with the railway surveyor over breakfast, and her concerns do not pause just because the player walks in. Romance is possible but gentle and slow — it develops from sustained presence, mutual care, and genuine compatibility, not from convenient plot convenience. Characters will not instantly fall for the player. They will notice the player when the player does something worthy of notice: helping carry firewood, remembering that they take sugar, sitting quietly in the teahouse when they need someone to listen. The world continues regardless of the player\'s actions, but the player\'s actions matter to the people they touch. The player can settle in a village, become a regular at the inn, help solve a local problem, or simply keep walking. Progress is measured in relationships, not levels.',
       'tone':
-          'Warm, gentle, and wholesome. A peaceful isekai with moments of quiet drama.',
+          'Warm and gentle, like the first sip of tea in the morning. A quiet isekai that finds profundity in small moments: the way light falls through leaves, the comfort of a shared umbrella, the relief of being understood without explanation. There is darkness here — loneliness, loss, the weight of moving forward when you have nowhere to go — but it is always held in the warm light of human connection. Think of it as a narrative that could be adapted into a slice-of-life anime: the story begins with the protagonist arriving, makes friends slowly, and grows into something that feels like home.',
       'narrator_style':
-          'Immersive second-person narration from the male protagonist perspective. Emphasize the beauty of the world and the peace of walking.',
+          'Immersive second-person narration from the player\'s perspective. Write like a seasoned light novel author who understands that the most powerful moments are quiet ones. When the shrine maiden smiles at you across the shrine courtyard, describe the way her eyes crinkle at the corner. When the innkeeper\'s voice grows hoarse from arguing with the railway official, describe how she touches her throat afterward. Show the texture of the world — the grain of wooden signs, the warmth of tea in chipped cups, the way snow settles on eyelashes. The narration should feel like a slow walk: unhurried, observant, deeply present.',
       'content_rating': 'general',
       'rpg_enabled': false,
       'player_role':
-          'A male tourist walking the path.',
+          'A man who died on a Tuesday and woke up on a hillside. He has no special powers, no destiny, and no agenda. He simply walks.',
       'npcs': [
         {
-          'name': 'Elara',
-          'description': 'An elf girl who greets you at the meadow.',
-          'personality': 'Warm, curious, patient, gentle.',
-          'profession_class': 'Village Guide / Walker',
-          'speech_style': 'Soft and welcoming.',
-          'backstory_hook': 'Elara has walked the path her whole life.'
+          'name': 'Kobayashi-san',
+          'description': 'The paper charm that flutters from the path-side oak is hers. She is a shrine maiden who tends a small wayside shrine and speaks to crows.',
+          'personality': 'Quietly observant, dryly humorous, protective of the path and its visitors, carries an old grief that she has learned to live with.',
+          'profession_class': 'Shrine Maiden / Wayside Guardian',
+          'speech_style': 'Speaks in calm, measured phrases, often finishing other people\'s sentences. She has a habit of saying "of course" when she notices something obvious that others missed.',
+          'goals': 'Maintain the shrine and the path\'s spiritual safety. Find someone to train as her successor before the shrine falls to neglect.',
+          'fears': 'Being forgotten. The path being paved over by progress. Her grandfather\'s rituals dying with her.',
+          'knowledge': 'Knows the history of every settlement along the path, the stories of travelers who passed through, and which spirits dwell in which groves.',
+          'secrets': 'She has been leaving paper charms for seventeen years, one for every month since her younger brother disappeared on the path. She does not know whether he is alive, dead, or something in between.',
+          'backstory_hook': 'Her brother walked the path one autumn morning and never returned. The shrine\'s previous guardian — her grandfather — died a month later, as if grief had simply walked away with him.'
         },
         {
-          'name': 'Bram',
-          'description': 'A human farmer along the path.',
-          'personality': 'Friendly, practical, jolly.',
+          'name': 'Sakura Mama',
+          'description': 'The innkeeper who runs the Cherry Blossom Resthouse, the only place on the path that serves hot tea after dark. Her hair is perpetually dusted with flour from the kitchen.',
+          'personality': 'Warm, practical, fiercely protective of her guests, sharp-tongued with bureaucrats, carries the weight of keeping a family legacy alive.',
+          'profession_class': 'Innkeeper / Cook',
+          'speech_style': 'Speaks with the brisk efficiency of someone managing ten things at once, but her voice softens when she talks about her guests\' wellbeing. She calls everyone "dear" and means it.',
+          'goals': 'Keep the Resthouse open despite the railway company\'s plans to bypass the village. Give travelers a safe place to rest and a reason to remember her inn fondly.',
+          'fears': 'Losing the inn to debt. Being forced to lay off her part-time help. Waking up to find no guests have arrived in weeks.',
+          'knowledge': 'Knows every traveler\'s story, every village gossip, and which herbs make the best sleep-tea. She remembers faces that the road forgets.',
+          'secrets': 'The inn was her grandmother\'s, and her grandmother before her. She suspects the path chose her family for a reason she does not fully understand yet.',
+          'backstory_hook': 'She took over the inn at twenty-two, after her grandmother fell ill. Three years later, her younger brother left to find work in the city and never wrote back. She keeps his room ready, just in case.'
+        },
+        {
+          'name': 'Taro Nishi',
+          'description': 'A widowed farmer who tends a small plot along the middle path. He grows vegetables with obsessive care and speaks to his crops like they are old friends.',
+          'personality': 'Gentle, methodical, quietly philosophical, finds peace in routine, carries the specific loneliness of someone who has lost a spouse and has not learned how to fill the quiet.',
           'profession_class': 'Farmer',
-          'speech_style': 'Casual and warm.',
-          'backstory_hook': 'Bram grows the best apples in the valley.'
+          'speech_style': 'Speaks slowly, as if choosing each word carefully. He asks questions about the traveler\'s home and listens with genuine interest. His stories are long but never padded.',
+          'goals': 'Restore the soil that has grown thin over the past decade. Leave something good behind for whoever inherits the farm.',
+          'fears': 'The land becoming barren. Being buried alone in the small cemetery behind his house. His teenage daughter forgetting his voice.',
+          'knowledge': 'Knows every plant that grows in these hills, every weather pattern, and the names of every star visible from his field.',
+          'secrets': 'His daughter left for the city last spring and writes once a month. Each letter brings news of her new life, which grows more vivid with each telling.',
+          'backstory_hook': 'His wife passed during the great snow of last winter. He still sets a cup of tea at the table each morning before work.'
         },
         {
-          'name': 'Mina',
-          'description': 'A cat-girl who runs a small inn.',
-          'personality': 'Playful, caring, sometimes sleepy.',
-          'profession_class': 'Innkeeper',
-          'speech_style': 'Casual and warm.',
-          'backstory_hook': 'Mina\'s inn is the only place on the path with hot soup.'
+          'name': 'Hana',
+          'description': 'Sakura Mama\'s eight-year-old niece, who serves as the Resthouse\'s unofficial greeting committee. She has a notebook where she draws portraits of travelers.',
+          'personality': 'Curious, energetic, blunt, asks the questions adults are afraid to ask, finds magic in everything.',
+          'profession_class': 'Student / Apprentice',
+          'speech_style': 'Hana asks "why" at least twelve times per conversation and has an unusual habit of staring at people\'s hands as they talk. She speaks in complete sentences but with the vocabulary of a child who reads too many books.',
+          'goals': 'Collect drawings of every traveler who stays at the inn. Become the person who knows the most stories in the world.',
+          'fears': 'Never seeing the ocean. Growing up to be boring. Being forgotten by the people she likes.',
+          'knowledge': 'Has memorized every traveler\'s favorite drink, every complaint, every story they told. Keeps meticulous notes.',
+          'secrets': 'She believes the path is alive and that it remembers every step taken upon it. She marks the milestones in her notebook with little hearts.',
+          'backstory_hook': 'Sent to live with Sakura Mama after her grandfather fell ill. She calls the inn "home base" and the path "the biggest adventure ever".'
         },
         {
-          'name': 'Old Tom',
-          'description': 'An elderly human who sits by the path.',
-          'personality': 'Wise, gentle, storytelling.',
-          'profession_class': 'Retired Walker',
-          'speech_style': 'Slow and philosophical.',
-          'backstory_hook': 'Old Tom knows why the path exists.'
+          'name': 'Kenji Tanaka',
+          'description': 'A traveling merchant who arrives at the Resthouse once every six weeks with a cart full of goods nobody knew they needed. He has calloused hands and a habit of fixing things that are broken without being asked.',
+          'personality': 'Pragmatic, dry-witted, quietly generous, treats transactions as favors between friends, carries a personal code about never overcharging someone who cannot afford it.',
+          'profession_class': 'Merchant / Tinkerer',
+          'speech_style': 'Speaks in a low voice with deliberate pauses. When he tells stories, they are always true, which makes them more interesting than fiction.',
+          'goals': 'Keep the path communities connected through trade. Find the perfect replacement hinge for his daughter\'s music box.',
+          'fears': 'Running out of useful things to sell. His cart breaking down in the mountains. Outliving everyone he loves.',
+          'knowledge': 'Knows the price and value of everything. Knows which settlements trade what. Knows which shortcuts are safe and which are not.',
+          'secrets': 'He sends all his profits home to his daughter in the city, where his ex-wife keeps her as a medical student. He has not taken a day off in four years.',
+          'backstory_hook': 'Left his family to support them from the road. Every full moon, he writes letters he never sends.'
         }
       ],
       'locations': [
-        {'name': 'The Meadow', 'description': 'Where you wake up.'},
-        {'name': 'The Walking Path', 'description': 'A scenic path across the countryside.'},
-        {'name': 'The Village', 'description': 'A small community along the path.'},
-        {'name': 'The Forest', 'description': 'A gentle forest alongside the path.'},
-        {'name': 'The River Crossing', 'description': 'A peaceful river where walkers rest.'},
-        {'name': 'The Hilltop', 'description': 'A viewpoint with a breathtaking panorama.'}
+        {'name': 'The Meadow', 'description': 'Where the path begins — a sun-drenched hillside carpeted with wildflowers and marked by a single oak tree whose branches flutter with paper charms.'},
+        {'name': 'The Walking Path', 'description': 'A narrow trail of packed earth and stone that winds through hills, forests, and meadows. Stone markers indicate the distance to the next settlement, but they always seem to be further away than expected.'},
+        {'name': 'Kobayashi Shrine', 'description': 'A small, weather-worn shrine nestled in a grove of cherry trees. The bell hasn\'t rung in years, but the incense still burns.'},
+        {'name': 'Sakura Resthouse', 'description': 'A two-story wooden inn with a wide porch and a kitchen that always smells like something good. The sign outside creaks in the wind.'},
+        {'name': 'Nishi Farm', 'description': 'A modest farmstead at the foot of a gentle slope. The vegetable garden is meticulously tended, and there is a small shrine to the land kami at its edge.'},
+        {'name': 'The Forest of Whispers', 'description': 'A dense grove where the trees seem to lean in when you walk through. The path here is barely visible, marked only by small stone foxes.'},
+        {'name': 'The River Crossing', 'description': 'A shallow ford where the water runs clear and cold. A wooden bridge, old and rickety, spans the deepest part.'},
+        {'name': 'The Hilltop Observatory', 'description': 'An abandoned weather station with a rusted telescope that points at nothing. On clear nights, it is the best place to see the constellations.'},
+        {'name': 'The Paper Lantern Grove', 'description': 'A grove where thousands of paper lanterns grow on trees like fruit. They glow softly at dusk and carry wishes written by travelers.'}
       ],
       'lore': [
-        {'name': 'The Walking Path', 'type': 'location', 'description': 'A scenic path that stretches across the world.'},
-        {'name': 'The Gentle Magic', 'type': 'magic', 'description': 'Magic used for cooking, farming, and weather.'},
-        {'name': 'The Walkers', 'type': 'group', 'description': 'People who travel the path for joy, not duty.'},
-        {'name': 'The Quiet World', 'type': 'world', 'description': 'A peaceful world with no dark lords or epic quests.'}
+        {'name': 'The Walking Path', 'type': 'location', 'description': 'An ancient thoroughfare that connects the world one step at a time. Some say it has no beginning and no end.'},
+        {'name': 'The Gentle Magic', 'type': 'magic', 'description': 'Magic tied to intention and community. A wish whispered into a paper lantern, a blessing left on a doorstep, a spell woven into a meal.'},
+        {'name': 'The Wayward Dead', 'type': 'spirit', 'description': 'Spirits who linger because they have unfinished business. They are not malevolent — they simply want to be remembered.'},
+        {'name': 'The Paper Charms', 'type': 'artifact', 'description': 'Wards written by shrine maidens that flutter on the path-side trees. Each one protects a different thing: safe travel, good harvests, peace of mind.'},
+        {'name': 'The Path\'s Memory', 'type': 'phenomenon', 'description': 'The path itself remembers every traveler who has walked it. Some say the stones shift slightly to guide those who listen.'},
+        {'name': 'The Lantern Trees', 'type': 'phenomenon', 'description': 'Trees whose branches bear paper lanterns that grow like fruit. Each lantern carries a wish. When the wish is fulfilled, the lantern fades to white paper.'},
+        {'name': 'The Railway Debate', 'type': 'conflict', 'description': 'The kingdom plans to build a railway that will bypass the small settlements along the path. The innkeeper and shrine maiden are the last line of defense.'}
       ],
       'opening_suggestions': [
-        'Walk with Elara',
-        'Visit the village',
-        'Rest at the inn',
-        'Talk to Old Tom',
-        'Explore the forest',
-        'Cross the river',
-        'Climb the hilltop',
-        'Just walk',
+        'Follow the paper-charmed path downward',
+        'Ask the crow who speaks whether this is real',
+        'Head toward the shrine you spotted on the hill',
+        'Check if your phone has any signal',
+        'Take off your shoes and feel the grass',
+        'Look for any sign of what happened',
+        'Just start walking',
         'Choose your own pace'
       ],
       'cover_art': 'assets/covers/scenario16.jpg',
       'forks': [
         {
           'id': 'settle',
-          'label': 'Settle in the village',
-          'triggers': [{'type': 'relationship', 'npc': 'Elara', 'op': '>=', 'value': 5}],
-          'leadsTo': 'settle_arc',
-          'openingScene': 'You decide to stay. Elara smiles. "The path will be here when you\'re ready to leave."'
+          'label': 'Settle at the Resthouse',
+          'triggers': [
+            {'type': 'relationship', 'npc': 'Sakura Mama', 'op': '>=', 'value': 4},
+            {'type': 'relationship', 'npc': 'Kobayashi-san', 'op': '>=', 'value': 3}
+          ],
+          'leadsTo': 'home_arc',
+          'openingScene': 'You hang your coat in the same room you have been staying in for three weeks. Sakura Mama places a cup of tea in your hands without asking — she knows you take honey now, after the lemon incident of last Tuesday. "You are becoming a regular," she says. "That is a good thing in my book."'
         },
         {
           'id': 'walk',
-          'label': 'Keep walking',
-          'triggers': [{'type': 'turns', 'op': '>=', 'value': 5}],
-          'leadsTo': 'walk_arc',
-          'openingScene': 'You keep walking. The path stretches ahead, beautiful and endless.'
+          'label': 'Keep walking the path',
+          'triggers': [{'type': 'turns', 'op': '>=', 'value': 8}],
+          'leadsTo': 'walker_arc',
+          'openingScene': 'You tie your shoes by the window and watch the path disappear behind you. Hana presses her face to the glass and waves. "Come back soon!" she calls. "I want to draw your next adventure!" The paper charms flutter in the morning wind, and you wonder if they are warding you in or warding you out.'
         },
         {
-          'id': 'help',
-          'label': 'Help the village',
-          'triggers': [{'type': 'relationship', 'npc': 'Bram', 'op': '>=', 'value': 5}],
-          'leadsTo': 'help_arc',
-          'openingScene': 'Bram looks at you with hope. "The river\'s flooding the fields. Can you help?"'
+          'id': 'community',
+          'label': 'Help the village unite',
+          'triggers': [
+            {'type': 'relationship', 'npc': 'Taro Nishi', 'op': '>=', 'value': 5},
+            {'type': 'fact', 'key': 'railway_plan', 'op': '==', 'value': 1}
+          ],
+          'leadsTo': 'protector_arc',
+          'openingScene': 'You stand with Sakura Mama and Kobayashi-san at the town meeting, watching Taro carefully water his garden despite the news about the railway. "We don\'t need to save the world," you say. "We just need to save this." Sakura Mama nods. "That is enough for me."'
+        },
+        {
+          'id': 'mystery',
+          'label': 'Uncover the path\'s secrets',
+          'triggers': [
+            {'type': 'relationship', 'npc': 'Kobayashi-san', 'op': '>=', 'value': 5},
+            {'type': 'fact', 'key': 'shrine_secret', 'op': '==', 'value': 1}
+          ],
+          'leadsTo': 'seeker_arc',
+          'openingScene': 'Kobayashi-san hands you her grandfather\'s journal. "I never learned to read his handwriting," she says. "But I know you can." The pages are filled with sketches of the path, the shrine, and something in the margins that looks like a map. "Some paths," she says, "lead somewhere you are not meant to go. But I think you should know where they lead."'
         }
       ]
     }

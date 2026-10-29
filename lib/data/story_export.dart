@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/character.dart';
+import '../models/scenario.dart';
 import '../models/story.dart';
 import 'database.dart';
 
@@ -30,12 +31,18 @@ class StoryExportService {
     final memories = await db.memoriesForStory(storyId, activeOnly: false);
     final npcMemories = await db.npcMemoriesForStory(storyId);
 
+    // Include the source scenario (title + full data) so imports can
+    // reconstruct the scenario when the original ID no longer exists.
+    final scenario = await db.getScenario(story.scenarioId);
+
     final payload = {
       'format_version': exportFormatVersion,
       'app': 'Storyloom',
       'exported_at': DateTime.now().toIso8601String(),
       'type': 'single_story',
       'story': story.toJson(),
+      'scenario_title': scenario?.title,
+      'scenario': scenario?.toJson(),
       'messages': messages.map((m) => m.toJson()).toList(),
       'npcs': npcs.map((n) => n.toJson()).toList(),
       'quests': quests.map((q) => q.toJson()).toList(),
@@ -60,9 +67,12 @@ class StoryExportService {
       final items = await db.inventoryForStory(s.id);
       final memories = await db.memoriesForStory(s.id, activeOnly: false);
       final npcMemories = await db.npcMemoriesForStory(s.id);
+      final scenario = await db.getScenario(s.scenarioId);
 
       allStoriesData.add({
         'story': s.toJson(),
+        'scenario_title': scenario?.title,
+        'scenario': scenario?.toJson(),
         'messages': messages.map((m) => m.toJson()).toList(),
         'npcs': npcs.map((n) => n.toJson()).toList(),
         'quests': quests.map((q) => q.toJson()).toList(),
@@ -135,10 +145,77 @@ class StoryExportService {
 
     final db = AppDatabase.instance;
 
-    // Check if the scenario referenced by this story exists
-    final scenarioId = (storyMap['scenario_id'] as num?)?.toInt() ?? 0;
-    final scenario = await db.getScenario(scenarioId);
-    final validScenarioId = scenario != null ? scenarioId : 1; // Fallback to first scenario
+    // Resolve the scenario with a multi-strategy fallback so re-imports
+    // survive seed renumbering (10 → 16 scenarios) and title changes.
+    final originalScenarioId =
+        (storyMap['scenario_id'] as num?)?.toInt() ?? 0;
+    final exportedTitle = data['scenario_title'] as String?;
+    final embeddedScenario = data['scenario'] is Map
+        ? Scenario.fromJson(Map<String, dynamic>.from(data['scenario'] as Map))
+        : null;
+
+    Scenario? scenario;
+    String resolution = 'id $originalScenarioId';
+
+    // 1. Try exact ID match
+    if (originalScenarioId > 0) {
+      scenario = await db.getScenario(originalScenarioId);
+      if (scenario != null) resolution = 'id $originalScenarioId';
+    }
+
+    // 2. Try title match (case-insensitive)
+    if (scenario == null && exportedTitle != null && exportedTitle.trim().isNotEmpty) {
+      scenario = await db.getScenarioByTitle(exportedTitle);
+      if (scenario != null) resolution = 'title "$exportedTitle"';
+    }
+
+    // 3. Recreate from embedded scenario data (user scenario, not a seed)
+    if (scenario == null && embeddedScenario != null) {
+      final recreated = Scenario(
+        id: 0,
+        title: embeddedScenario.title,
+        description: embeddedScenario.description,
+        genre: embeddedScenario.genre,
+        tags: embeddedScenario.tags,
+        premise: embeddedScenario.premise,
+        openingScene: embeddedScenario.openingScene,
+        worldDescription: embeddedScenario.worldDescription,
+        rules: embeddedScenario.rules,
+        tone: embeddedScenario.tone,
+        narratorStyle: embeddedScenario.narratorStyle,
+        contentRating: embeddedScenario.contentRating,
+        rpgEnabled: embeddedScenario.rpgEnabled,
+        playerRole: embeddedScenario.playerRole,
+        npcs: embeddedScenario.npcs,
+        locations: embeddedScenario.locations,
+        lore: embeddedScenario.lore,
+        openingSuggestions: embeddedScenario.openingSuggestions,
+        isSample: false,
+        playCount: 0,
+        author: embeddedScenario.author,
+        coverArt: embeddedScenario.coverArt,
+        backgroundArt: embeddedScenario.backgroundArt,
+        seedVersion: embeddedScenario.seedVersion,
+        forks: embeddedScenario.forks,
+      );
+      final newId = await db.insertUserScenario(recreated);
+      scenario = await db.getScenario(newId);
+      resolution = 'recreated from embedded data';
+    }
+
+    // 4. Last resort: first scenario in the library
+    if (scenario == null) {
+      final all = await db.listScenarios();
+      scenario = all.isNotEmpty ? all.first : null;
+      resolution = 'fallback to first scenario';
+    }
+
+    if (scenario == null) {
+      throw const FormatException(
+          'No scenarios in library — cannot import story.');
+    }
+
+    final validScenarioId = scenario.id;
 
     // Build the story, resetting ID so it gets inserted as a new entry
     final characterMap = storyMap['character'] is Map
@@ -267,7 +344,8 @@ class StoryExportService {
       }
     }
 
-    return 'Imported "${importedStory.title}" (${messagesRaw.length} messages, ${npcsRaw.length} NPCs).';
+    return 'Imported "${importedStory.title}" — scenario matched via $resolution '
+        '(${messagesRaw.length} messages, ${npcsRaw.length} NPCs).';
   }
 
   Future<String> _importAllStories(Map<String, dynamic> data) async {

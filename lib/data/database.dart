@@ -304,6 +304,27 @@ class AppDatabase {
     return Scenario.fromJson(_decodeScenarioRow(rows.first));
   }
 
+  /// Looks up a scenario by exact title (case-insensitive). Used by story
+  /// import when the original scenario ID no longer exists (seed renumbering).
+  Future<Scenario?> getScenarioByTitle(String title) async {
+    final db = await instance.db;
+    final rows = await db.query('scenarios',
+        where: 'title COLLATE NOCASE = ?', whereArgs: [title], limit: 1);
+    if (rows.isEmpty) return null;
+    return Scenario.fromJson(_decodeScenarioRow(rows.first));
+  }
+
+  /// Inserts a user-created scenario (is_sample = 0) and returns its new ID.
+  /// Used by story import to recreate the original scenario when neither ID
+  /// nor title match an existing row.
+  Future<int> insertUserScenario(Scenario s) async {
+    final db = await instance.db;
+    return db.insert('scenarios', {
+      ..._scenRow(s),
+      'id': s.id > 0 ? s.id : null,
+    });
+  }
+
   Future<void> incrementScenarioPlayCount(int id) async {
     final db = await instance.db;
     await db.rawUpdate('UPDATE scenarios SET play_count = play_count + 1 WHERE id = ?', [id]);

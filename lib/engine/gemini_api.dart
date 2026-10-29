@@ -105,6 +105,7 @@ class GeminiService {
     );
 
     late StreamIterator<GenerateContentResponse> iterator;
+    GenerateContentResponse? lastResponse;
     String? firstToken;
     var attempt = 0;
     var delay = 2.0;
@@ -115,6 +116,7 @@ class GeminiService {
         iterator = StreamIterator(
             model.generateContentStream([Content.text(bundle.userMessage())]));
         while (await iterator.moveNext()) {
+          lastResponse = iterator.current;
           final t = iterator.current.text;
           if (t != null && t.trim().isNotEmpty) {
             firstToken = t;
@@ -150,6 +152,15 @@ class GeminiService {
       }
     }
     if (firstToken == null) {
+      // Check whether the provider blocked the content entirely.
+      final blockReason = lastResponse?.promptFeedback?.blockReason;
+      final blockMsg = blockReason?.toString() ?? '';
+      if (blockMsg.isNotEmpty) {
+        throw AiException(
+          'Content was blocked by the AI provider\'s safety filters '
+          '($blockMsg). Try lowering the content rating or rephrasing.',
+          retryable: false);
+      }
       throw const AiException('Model returned empty output.', retryable: false);
     }
     yield firstToken;
@@ -202,6 +213,7 @@ class GeminiService {
         }
 
         bool yieldedAny = false;
+        bool? blockedByFilter;
         await for (final rawLine in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
           if (!rawLine.startsWith('data: ')) continue;
           final data = rawLine.substring(6).trim();
@@ -210,17 +222,29 @@ class GeminiService {
             final json = jsonDecode(data) as Map<String, dynamic>;
             final choices = json['choices'] as List?;
             if (choices == null || choices.isEmpty) continue;
-            final delta = (choices[0] as Map<String, dynamic>)['delta'] as Map<String, dynamic>?;
+            final first = choices[0] as Map<String, dynamic>;
+            final delta = first['delta'] as Map<String, dynamic>?;
             final content = delta?['content'] as String?;
             if (content != null && content.isNotEmpty) {
               yieldedAny = true;
               yield content;
+            }
+            // OpenAI-style content filter finish reason.
+            final finish = first['finish_reason'] as String?;
+            if (finish == 'content_filter' || finish == 'safety') {
+              blockedByFilter = true;
             }
           } catch (_) {
             // Skip malformed SSE lines
           }
         }
 
+        if (blockedByFilter == true) {
+          throw const AiException(
+            'Content was blocked by the provider\'s content filter. '
+            'Try lowering the content rating or rephrasing.',
+            retryable: false);
+        }
         if (!yieldedAny) {
           throw const AiException('AI returned empty output.', retryable: false);
         }
@@ -488,6 +512,19 @@ class GeminiService {
     }
     final message = _messageOf(e);
     final low = message.toLowerCase();
+    // Safety / content filter blocks — not retryable, give a clear message.
+    if (low.contains('safety') ||
+        low.contains('blocked') ||
+        low.contains('content filter') ||
+        low.contains('content_filter') ||
+        low.contains('finish_reason') && low.contains('safety') ||
+        low.contains('probability') && low.contains('safety')) {
+      return const AiException(
+        'Content was blocked by the AI provider\'s safety filters. '
+        'Try lowering the content rating in the scenario settings, '
+        'or rephrase your input to be less graphic.',
+        retryable: false);
+    }
     if (low.contains('quota') ||
         low.contains('resource_exhausted') ||
         low.contains('per day') ||
